@@ -1,0 +1,118 @@
+.panel {
+  padding: 12px;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.2px;
+}
+
+.section {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+}
+
+.section-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.row.mt-8 { margin-top: 8px; }
+
+.item-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.slider-row {
+  margin-top: 6px;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip-group.small .chip { padding: 3px 8px; font-size: 10px; }
+
+.chip {
+  padding: 4px 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  cursor: pointer;
+  font-family: inherit;
+}
+.chip:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.chip.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Toggle switch */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle input { display: none; }
+
+.track {
+  width: 34px;
+  height: 18px;
+  background: var(--bg-hover);
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  transition: background 0.2s, border-color 0.2s;
+  position: relative;
+}
+
+.track::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.toggle input:checked + .track {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.toggle input:checked + .track::after {
+  transform: translateX(16px);
+  background: var(--accent);
+}
