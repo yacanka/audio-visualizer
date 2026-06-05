@@ -67,8 +67,12 @@ onUnmounted(() => {
   audio.dispose()
 })
 
+function getCanvas() {
+  return canvasRef.value
+}
+
 // Expose methods
-defineExpose({ audio })
+defineExpose({ audio, getCanvas })
 
 // Watch smoothing change
 watch(() => store.smoothing, audio.updateAnalyserSettings)
