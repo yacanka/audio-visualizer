@@ -1,4 +1,5 @@
 import { findCurrentLyric } from '../utils/lyrics.js'
+import { drawParticleLayer } from './particles.js'
 
 const imageCache = new Map()
 
@@ -21,8 +22,8 @@ export function drawProgressBar(store, ctx, size) {
 }
 
 /** Draw user-added elements over the visualizer preview. */
-export function drawElements(store, ctx, size) {
-  store.elements.forEach(element => drawElement(store, ctx, element, size))
+export function drawElements(store, ctx, size, timestamp = 0, frequencyData = null) {
+  store.elements.forEach(element => drawElement(store, ctx, element, size, timestamp, frequencyData))
 }
 
 function getTextLayout(store, size) {
@@ -71,12 +72,18 @@ function drawLyrics(store, ctx, size) {
   ctx.shadowBlur = 0
 }
 
-function drawElement(store, ctx, element, size) {
-  const x = (element.x / 100) * size.w
-  const y = (element.y / 100) * size.h
-  if (element.type === 'text') drawTextElement(ctx, element, x, y)
-  if (element.type === 'image') drawImageElement(ctx, element, x, y, size)
-  if (element.type === 'particles') drawParticleElement(store, ctx, element, x, y, size)
+function drawElement(store, ctx, element, size, timestamp, frequencyData) {
+  if (element.type === 'particles') {
+    drawParticleLayer(store, ctx, element, size, timestamp, frequencyData)
+    return
+  }
+  const point = getElementPoint(element, size)
+  if (element.type === 'text') drawTextElement(ctx, element, point.x, point.y)
+  if (element.type === 'image') drawImageElement(ctx, element, point.x, point.y, size)
+}
+
+function getElementPoint(element, size) {
+  return { x: (element.x / 100) * size.w, y: (element.y / 100) * size.h }
 }
 
 function drawTextElement(ctx, element, x, y) {
@@ -97,38 +104,6 @@ function drawImageElement(ctx, element, x, y, size) {
   ctx.globalAlpha = element.opacity ?? 1
   ctx.drawImage(image, x - imageSize / 2, y - imageSize / 2, imageSize, imageSize)
   ctx.globalAlpha = 1
-}
-
-function drawParticleElement(store, ctx, element, x, y, size) {
-  const radius = (element.size / 100) * Math.min(size.w, size.h)
-  const count = element.count || 42
-  ctx.fillStyle = element.color || '#ffffff'
-  for (let index = 0; index < count; index++) drawParticle(store, ctx, x, y, radius, index, count)
-}
-
-function drawParticle(store, ctx, x, y, radius, index, count) {
-  const phase = getParticlePhase(store, index)
-  const point = getParticlePoint(store.particleDirection, phase, index, count, radius)
-  ctx.globalAlpha = 0.25 + 0.75 * (1 - phase)
-  ctx.beginPath()
-  ctx.arc(x + point.x, y + point.y, 1.5 + (index % 3), 0, Math.PI * 2)
-  ctx.fill()
-  ctx.globalAlpha = 1
-}
-
-function getParticlePhase(store, index) {
-  const speed = store.particleReactiveSpeed ? 0.8 : 0.35
-  return (store.currentTime * speed + index * 0.137) % 1
-}
-
-function getParticlePoint(direction, phase, index, count, radius) {
-  const angle = (index / count) * Math.PI * 2
-  if (direction === 'out') return { x: Math.cos(angle) * radius * phase, y: Math.sin(angle) * radius * phase }
-  const distance = radius * (phase - 0.5)
-  if (direction === 'left') return { x: -distance, y: Math.sin(angle) * radius * 0.35 }
-  if (direction === 'up') return { x: Math.cos(angle) * radius * 0.35, y: -distance }
-  if (direction === 'down') return { x: Math.cos(angle) * radius * 0.35, y: distance }
-  return { x: distance, y: Math.sin(angle) * radius * 0.35 }
 }
 
 function getCachedImage(src) {

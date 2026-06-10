@@ -25,7 +25,7 @@
 import { useAppStore } from '../stores/app.js'
 
 const store = useAppStore()
-const qualities = [720, 480, 360, 240]
+const qualities = [1080, 720, 480, 360, 240]
 </script>
 
 <style scoped>
