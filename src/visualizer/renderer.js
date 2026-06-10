@@ -5,12 +5,13 @@ import { drawElements, drawProgressBar, drawTextOverlay } from './overlays.js'
 
 /** Create a stateful canvas renderer for animation frames. */
 export function createVisualizerRenderer(store) {
+  const renderingContexts = new WeakMap()
   let driftOffset = 0
   let driftDirection = 1
   let lastTime = 0
 
   function drawFrame(canvas, getFrequencyData, getTimeData, timestamp) {
-    const ctx = canvas.getContext('2d')
+    const ctx = getRenderingContext(canvas, renderingContexts)
     const size = { w: canvas.width, h: canvas.height }
     const deltaTime = timestamp - lastTime
     lastTime = timestamp
@@ -22,6 +23,13 @@ export function createVisualizerRenderer(store) {
   }
 
   return { drawFrame }
+}
+
+function getRenderingContext(canvas, renderingContexts) {
+  if (renderingContexts.has(canvas)) return renderingContexts.get(canvas)
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true })
+  renderingContexts.set(canvas, ctx)
+  return ctx
 }
 
 function drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset) {

@@ -11,7 +11,7 @@ export function createProjectState(audio) {
     visualizerSubTab: ref('layers'),
     backdropSubTab: ref('reflection'),
     aspectRatio: ref('16:9'),
-    previewQuality: ref(480),
+    previewQuality: ref(720),
     previewBackgroundMode: ref('animate'),
     previewAudioAnalysisEnabled: ref(true),
     exportStatus: ref(''),

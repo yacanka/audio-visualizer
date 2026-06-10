@@ -35,21 +35,33 @@
           <span class="track" />
         </label>
       </div>
+      <div class="row mt-8">
+        <label class="item-label">Scatter Speed</label>
+        <input type="number" min="0.1" max="4" step="0.1" v-model.number="store.particleSpeed" />
+      </div>
+      <div class="row mt-8">
+        <label class="item-label">Min Size</label>
+        <input type="number" min="1" max="40" step="0.5" v-model.number="store.particleMinSize" />
+      </div>
+      <div class="row mt-8">
+        <label class="item-label">Max Size</label>
+        <input type="number" min="1" max="80" step="0.5" v-model.number="store.particleMaxSize" />
+      </div>
       <button class="wide-action secondary" @click="store.addParticleElement()">Add Particles</button>
     </section>
 
     <section class="section" v-if="selected">
-      <label class="section-label">{{ selected.type === 'text' ? 'Text' : 'Image' }}</label>
+      <label class="section-label">{{ selectedLabel }}</label>
       <input v-if="selected.type === 'text'" class="text-input" v-model="selected.text" />
-      <div class="row mt-8">
+      <div class="row mt-8" v-if="selected.type !== 'particles'">
         <label class="item-label">X Position</label>
         <input type="number" min="0" max="100" v-model.number="selected.x" />
       </div>
-      <div class="row mt-8">
+      <div class="row mt-8" v-if="selected.type !== 'particles'">
         <label class="item-label">Y Position</label>
         <input type="number" min="0" max="100" v-model.number="selected.y" />
       </div>
-      <div class="row mt-8">
+      <div class="row mt-8" v-if="selected.type !== 'particles'">
         <label class="item-label">Scale</label>
         <input type="number" min="8" max="120" v-model.number="selected.size" />
       </div>
@@ -60,6 +72,10 @@
       <div class="row mt-8" v-if="selected.type === 'particles'">
         <label class="item-label">Color</label>
         <input type="color" v-model="selected.color" />
+      </div>
+      <div class="row mt-8" v-if="selected.type === 'particles'">
+        <label class="item-label">Particle Count</label>
+        <input type="number" min="1" max="500" v-model.number="selected.count" />
       </div>
       <button class="remove-btn" @click="store.deleteSelectedElement()">Delete Selected</button>
     </section>
@@ -86,7 +102,14 @@ import { useAppStore } from '../../stores/app.js'
 const store = useAppStore()
 const mediaInput = ref(null)
 const selected = computed(() => store.elements.find(item => item.id === store.selectedElementId))
+const selectedLabel = computed(() => getElementLabel(selected.value))
 const directions = ['right', 'left', 'up', 'down', 'out']
+
+function getElementLabel(element) {
+  if (!element) return ''
+  if (element.type === 'particles') return 'Particles'
+  return element.type === 'text' ? 'Text' : 'Image'
+}
 
 function onMedia(event) {
   const file = event.target.files[0]

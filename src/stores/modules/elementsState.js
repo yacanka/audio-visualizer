@@ -6,6 +6,9 @@ export function createElementsState() {
   const selectedElementId = ref(null)
   const particleDirection = ref('right')
   const particleReactiveSpeed = ref(true)
+  const particleSpeed = ref(0.8)
+  const particleMinSize = ref(2)
+  const particleMaxSize = ref(5)
 
   /** Add a movable text element to the canvas timeline. */
   function addTextElement() {
@@ -47,6 +50,9 @@ export function createElementsState() {
     selectedElementId,
     particleDirection,
     particleReactiveSpeed,
+    particleSpeed,
+    particleMinSize,
+    particleMaxSize,
     addTextElement,
     addImageElement,
     addSubscribeAnimation,
@@ -64,5 +70,5 @@ function createTextElement(text, x, y, size) {
 }
 
 function createParticleElement(id) {
-  return { id, type: 'particles', name: 'Particles', x: 50, y: 50, size: 40, color: '#ffffff', count: 42 }
+  return { id, type: 'particles', name: 'Particles', x: 50, y: 50, size: 40, color: '#ffffff', count: 64 }
 }
