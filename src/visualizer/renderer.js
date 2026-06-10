@@ -18,10 +18,13 @@ export function createVisualizerRenderer(store) {
     const deltaTime = lastTime ? timestamp - lastTime : 0
     lastTime = timestamp
 
+    const frameData = getFrameData(store, getFrequencyData, getTimeData)
+    particleTime = updateParticleTime(store, particleTime, deltaTime, frameData.frequency)
+
     drawBackdrop(store, ctx, size.w, size.h)
     driftOffset = updateDrift(store, driftOffset, driftDirection, deltaTime)
     driftDirection = updateDriftDirection(driftOffset, driftDirection)
-    drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset, timestamp)
+    drawMainContent(store, ctx, size, frameData, driftOffset, particleTime)
   }
 
   return { drawFrame }
@@ -34,14 +37,13 @@ function getRenderingContext(canvas, renderingContexts) {
   return ctx
 }
 
-function drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset, timestamp) {
-  const frameData = getFrameData(store, getFrequencyData, getTimeData)
+function drawMainContent(store, ctx, size, frameData, driftOffset, particleTime) {
   applyGlow(store, ctx)
   drawVisualizerShape(store, ctx, frameData, size, driftOffset)
   ctx.shadowBlur = 0
   drawTextOverlay(store, ctx, size, driftOffset)
   drawProgressBar(store, ctx, size)
-  drawElements(store, ctx, size, timestamp, frameData.frequency)
+  drawElements(store, ctx, size, particleTime * 1000, frameData.frequency)
 }
 
 function getFrameData(store, getFrequencyData, getTimeData) {

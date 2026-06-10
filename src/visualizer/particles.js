@@ -37,7 +37,7 @@ export function createParticleOptions(store, element, size, timestamp = 0, frequ
     maxSize: getMaxParticleSize(store),
     wander: getParticleWander(store),
     seedKey: element.id || element.name || 'particles',
-    speed: getParticleSpeed(store, frequencyData),
+    speed: getBaseParticleSpeed(store),
     time: getAnimationTime(store, timestamp),
     w: size.w,
     h: size.h,
@@ -66,10 +66,14 @@ function getParticleWander(store) {
   return clamp(value, 0, 100) / 100
 }
 
-function getParticleSpeed(store, frequencyData) {
+function getBaseParticleSpeed(store) {
   const baseSpeed = Number(store.particleSpeed) || DEFAULT_PARTICLE_SPEED
-  const spectrumBoost = getSpectrumBoost(store, frequencyData)
-  return clamp(baseSpeed, 0.1, 4) * spectrumBoost
+  return clamp(baseSpeed, 0.1, 4)
+}
+
+/** Return the per-frame particle time multiplier for audio-reactive motion. */
+export function getParticleFrameBoost(store, frequencyData) {
+  return getSpectrumBoost(store, frequencyData)
 }
 
 function getSpectrumBoost(store, frequencyData) {
