@@ -5,12 +5,13 @@ import { drawElements, drawProgressBar, drawTextOverlay } from './overlays.js'
 
 /** Create a stateful canvas renderer for animation frames. */
 export function createVisualizerRenderer(store) {
+  const renderingContexts = new WeakMap()
   let driftOffset = 0
   let driftDirection = 1
   let lastTime = 0
 
   function drawFrame(canvas, getFrequencyData, getTimeData, timestamp) {
-    const ctx = canvas.getContext('2d')
+    const ctx = getRenderingContext(canvas, renderingContexts)
     const size = { w: canvas.width, h: canvas.height }
     const deltaTime = timestamp - lastTime
     lastTime = timestamp
@@ -18,19 +19,27 @@ export function createVisualizerRenderer(store) {
     drawBackdrop(store, ctx, size.w, size.h)
     driftOffset = updateDrift(store, driftOffset, driftDirection, deltaTime)
     driftDirection = updateDriftDirection(driftOffset, driftDirection)
-    drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset)
+    drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset, timestamp)
   }
 
   return { drawFrame }
 }
 
-function drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset) {
+function getRenderingContext(canvas, renderingContexts) {
+  if (renderingContexts.has(canvas)) return renderingContexts.get(canvas)
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true })
+  renderingContexts.set(canvas, ctx)
+  return ctx
+}
+
+function drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset, timestamp) {
+  const frameData = getFrameData(store, getFrequencyData, getTimeData)
   applyGlow(store, ctx)
-  drawVisualizerShape(store, ctx, getFrameData(store, getFrequencyData, getTimeData), size, driftOffset)
+  drawVisualizerShape(store, ctx, frameData, size, driftOffset)
   ctx.shadowBlur = 0
   drawTextOverlay(store, ctx, size, driftOffset)
   drawProgressBar(store, ctx, size)
-  drawElements(store, ctx, size)
+  drawElements(store, ctx, size, timestamp, frameData.frequency)
 }
 
 function getFrameData(store, getFrequencyData, getTimeData) {
