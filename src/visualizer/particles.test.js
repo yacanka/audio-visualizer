@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createParticleOptions, getParticleFrameBoost, getParticlePoint } from './particles.js'
+import { createParticleOptions, getParticleFrameMotion, getParticlePoint } from './particles.js'
 
 const size = { w: 1000, h: 500 }
 const element = { id: 'particle-test', count: 80 }
@@ -77,19 +77,30 @@ describe('particles', () => {
   it('increases the reactive frame boost for stronger bass spectrum energy', () => {
     const quiet = createStore('right', 0, { particleReactiveSpeed: true, vizSpectrum: 'bass' })
     const loud = createStore('right', 0, { particleReactiveSpeed: true, vizSpectrum: 'bass' })
-    const loudBoost = getParticleFrameBoost(loud, createFrequency(230))
-    const quietBoost = getParticleFrameBoost(quiet, createFrequency(12))
-    expect(loudBoost).toBeGreaterThan(quietBoost)
+    const loudMotion = getParticleFrameMotion(loud, createFrequency(230))
+    const quietMotion = getParticleFrameMotion(quiet, createFrequency(12))
+    expect(loudMotion.boost).toBeGreaterThan(quietMotion.boost)
+  })
+
+  it('adds attack acceleration when audio energy rises quickly', () => {
+    const store = createStore('right', 0, { particleReactiveSpeed: true, vizSpectrum: 'bass' })
+    const steadyLoud = getParticleFrameMotion(store, createFrequency(230), 230 / 255)
+    const loudAttack = getParticleFrameMotion(store, createFrequency(230), 12 / 255)
+    const decayedAttack = getParticleFrameMotion(store, createFrequency(230), 230 / 255, loudAttack.impulse)
+    expect(loudAttack.boost).toBeGreaterThan(steadyLoud.boost)
+    expect(decayedAttack.boost).toBeGreaterThan(steadyLoud.boost)
+    expect(decayedAttack.boost).toBeLessThan(loudAttack.boost)
   })
 
   it('keeps reactive particle movement moving forward when audio energy drops', () => {
     const loudFrequency = createFrequency(230)
     const quietFrequency = createFrequency(12)
     const firstTime = 1
-    const nextTime = firstTime + 0.016 * getParticleFrameBoost(createStore('right', firstTime, {
+    const quietMotion = getParticleFrameMotion(createStore('right', firstTime, {
       particleReactiveSpeed: true,
       vizSpectrum: 'bass',
-    }), quietFrequency)
+    }), quietFrequency, 230 / 255)
+    const nextTime = firstTime + 0.016 * quietMotion.boost
     const first = getParticlePoint(createOptions('right', firstTime, {
       frequencyData: loudFrequency,
       particleReactiveSpeed: true,
@@ -109,8 +120,8 @@ describe('particles', () => {
     data.fill(240, 50)
     const bass = createStore('right', 0, { particleReactiveSpeed: true, vizSpectrum: 'bass' })
     const wide = createStore('right', 0, { particleReactiveSpeed: true, vizSpectrum: 'wide' })
-    expect(getParticleFrameBoost(wide, data)).toBeGreaterThan(
-      getParticleFrameBoost(bass, data),
+    expect(getParticleFrameMotion(wide, data).boost).toBeGreaterThan(
+      getParticleFrameMotion(bass, data).boost,
     )
   })
 })

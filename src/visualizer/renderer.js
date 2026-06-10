@@ -2,7 +2,7 @@ import { getRenderableFrequencyData, getRenderableTimeData } from './audioData.j
 import { drawBackdrop } from './backdrop.js'
 import { drawVisualizerShape } from './shapes.js'
 import { drawElements, drawProgressBar, drawTextOverlay } from './overlays.js'
-import { getParticleFrameBoost } from './particles.js'
+import { getParticleFrameMotion } from './particles.js'
 
 /** Create a stateful canvas renderer for animation frames. */
 export function createVisualizerRenderer(store) {
@@ -11,6 +11,8 @@ export function createVisualizerRenderer(store) {
   let driftDirection = 1
   let lastTime = 0
   let particleTime = 0
+  let particleEnergy = null
+  let particleImpulse = 0
 
   function drawFrame(canvas, getFrequencyData, getTimeData, timestamp) {
     const ctx = getRenderingContext(canvas, renderingContexts)
@@ -19,7 +21,10 @@ export function createVisualizerRenderer(store) {
     lastTime = timestamp
 
     const frameData = getFrameData(store, getFrequencyData, getTimeData)
-    particleTime = updateParticleTime(store, particleTime, deltaTime, frameData.frequency)
+    const particleMotion = getParticleFrameMotion(store, frameData.frequency, particleEnergy, particleImpulse)
+    particleTime = updateParticleTime(particleTime, deltaTime, particleMotion.boost)
+    particleEnergy = particleMotion.energy
+    particleImpulse = particleMotion.impulse
 
     drawBackdrop(store, ctx, size.w, size.h)
     driftOffset = updateDrift(store, driftOffset, driftDirection, deltaTime)
@@ -53,9 +58,9 @@ function getFrameData(store, getFrequencyData, getTimeData) {
   }
 }
 
-function updateParticleTime(store, currentTime, deltaTime, frequencyData) {
+function updateParticleTime(currentTime, deltaTime, boost) {
   const safeDelta = Math.max(0, deltaTime) / 1000
-  return currentTime + safeDelta * getParticleFrameBoost(store, frequencyData)
+  return currentTime + safeDelta * boost
 }
 
 function updateDrift(store, currentOffset, direction, deltaTime) {
