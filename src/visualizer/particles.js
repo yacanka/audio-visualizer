@@ -66,16 +66,16 @@ function getParticleWander(store) {
   return clamp(value, 0, 100) / 100
 }
 
-/** Return the per-frame spectrum multiplier used by the renderer particle clock. */
-export function getParticleFrameBoost(store, frequencyData) {
+function getParticleSpeed(store, frequencyData) {
+  const baseSpeed = Number(store.particleSpeed) || DEFAULT_PARTICLE_SPEED
+  const spectrumBoost = getSpectrumBoost(store, frequencyData)
+  return clamp(baseSpeed, 0.1, 4) * spectrumBoost
+}
+
+function getSpectrumBoost(store, frequencyData) {
   if (!store.particleReactiveSpeed) return 1
   const energy = getSpectrumEnergy(frequencyData, store.vizSpectrum)
   return 1 + energy * MAX_SPECTRUM_BOOST
-}
-
-function getParticleSpeed(store) {
-  const baseSpeed = Number(store.particleSpeed) || DEFAULT_PARTICLE_SPEED
-  return clamp(baseSpeed, 0.1, 4)
 }
 
 function getSpectrumEnergy(frequencyData, spectrumMode = 'wide') {

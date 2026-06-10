@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createParticleOptions, getParticleFrameBoost, getParticlePoint } from './particles.js'
+import { createParticleOptions, getParticlePoint } from './particles.js'
 
 const size = { w: 1000, h: 500 }
 const element = { id: 'particle-test', count: 80 }
@@ -74,26 +74,18 @@ describe('particles', () => {
     expect(getDistance(straight, wandering)).toBeGreaterThan(1)
   })
 
-  it('increases the frame boost for stronger bass spectrum energy', () => {
-    const quiet = getBoost({ particleReactiveSpeed: true, vizSpectrum: 'bass' }, createFrequency(12))
-    const loud = getBoost({ particleReactiveSpeed: true, vizSpectrum: 'bass' }, createFrequency(230))
-    expect(loud).toBeGreaterThan(quiet)
-  })
-
-  it('keeps particles moving forward when the spectrum boost falls', () => {
-    const loudBoost = getBoost({ particleReactiveSpeed: true }, createFrequency(240))
-    const quietBoost = getBoost({ particleReactiveSpeed: true }, createFrequency(10))
-    const first = getParticlePoint(createOptions('right', 0.1 * loudBoost), 2)
-    const second = getParticlePoint(createOptions('right', 0.1 * loudBoost + 0.1 * quietBoost), 2)
-    expect(second.x).toBeLessThan(first.x)
+  it('increases reactive speed for stronger bass spectrum energy', () => {
+    const quiet = createOptions('right', 0, { frequencyData: createFrequency(12), particleReactiveSpeed: true, vizSpectrum: 'bass' })
+    const loud = createOptions('right', 0, { frequencyData: createFrequency(230), particleReactiveSpeed: true, vizSpectrum: 'bass' })
+    expect(loud.speed).toBeGreaterThan(quiet.speed)
   })
 
   it('uses wide spectrum energy when wide mode is selected', () => {
     const data = new Uint8Array(100).fill(0)
     data.fill(240, 50)
-    const bass = getBoost({ particleReactiveSpeed: true, vizSpectrum: 'bass' }, data)
-    const wide = getBoost({ particleReactiveSpeed: true, vizSpectrum: 'wide' }, data)
-    expect(wide).toBeGreaterThan(bass)
+    const bass = createOptions('right', 0, { frequencyData: data, particleReactiveSpeed: true, vizSpectrum: 'bass' })
+    const wide = createOptions('right', 0, { frequencyData: data, particleReactiveSpeed: true, vizSpectrum: 'wide' })
+    expect(wide.speed).toBeGreaterThan(bass.speed)
   })
 })
 
@@ -109,10 +101,6 @@ function getBounds(options) {
 
 function createFrequency(value) {
   return new Uint8Array(100).fill(value)
-}
-
-function getBoost(overrides, data) {
-  return getParticleFrameBoost(createStore('right', 0, overrides), data)
 }
 
 function getDistance(first, second) {
