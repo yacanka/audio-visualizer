@@ -6,7 +6,7 @@ export function createElementsState() {
   const selectedElementId = ref(null)
   const particleDirection = ref('right')
   const particleReactiveSpeed = ref(true)
-  const particleSpeed = ref(0.8)
+  const particleSpeed = ref(1.2)
   const particleMinSize = ref(2)
   const particleMaxSize = ref(5)
 

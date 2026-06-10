@@ -22,8 +22,8 @@ export function drawProgressBar(store, ctx, size) {
 }
 
 /** Draw user-added elements over the visualizer preview. */
-export function drawElements(store, ctx, size) {
-  store.elements.forEach(element => drawElement(store, ctx, element, size))
+export function drawElements(store, ctx, size, timestamp = 0) {
+  store.elements.forEach(element => drawElement(store, ctx, element, size, timestamp))
 }
 
 function getTextLayout(store, size) {
@@ -72,9 +72,9 @@ function drawLyrics(store, ctx, size) {
   ctx.shadowBlur = 0
 }
 
-function drawElement(store, ctx, element, size) {
+function drawElement(store, ctx, element, size, timestamp) {
   if (element.type === 'particles') {
-    drawParticleLayer(store, ctx, element, size)
+    drawParticleLayer(store, ctx, element, size, timestamp)
     return
   }
   const point = getElementPoint(element, size)

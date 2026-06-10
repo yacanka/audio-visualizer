@@ -1,12 +1,12 @@
 const DEFAULT_PARTICLE_COUNT = 42
-const DEFAULT_PARTICLE_SPEED = 0.8
+const DEFAULT_PARTICLE_SPEED = 1.2
 const DEFAULT_PARTICLE_MIN_SIZE = 2
 const DEFAULT_PARTICLE_MAX_SIZE = 5
 const EDGE_MARGIN_RATIO = 0.04
 
 /** Draw a deterministic, natural particle layer for the current frame. */
-export function drawParticleLayer(store, ctx, element, size) {
-  const options = createParticleOptions(store, element, size)
+export function drawParticleLayer(store, ctx, element, size, timestamp = 0) {
+  const options = createParticleOptions(store, element, size, timestamp)
   ctx.fillStyle = element.color || '#ffffff'
   for (let index = 0; index < options.count; index++) drawParticle(ctx, options, index)
   ctx.globalAlpha = 1
@@ -22,7 +22,7 @@ export function getParticlePoint(options, index) {
 }
 
 /** Return normalized particle settings with safe min/max bounds. */
-export function createParticleOptions(store, element, size) {
+export function createParticleOptions(store, element, size, timestamp = 0) {
   return {
     count: clamp(Math.round(element.count || DEFAULT_PARTICLE_COUNT), 1, 500),
     direction: store.particleDirection || 'right',
@@ -30,7 +30,7 @@ export function createParticleOptions(store, element, size) {
     maxSize: getMaxParticleSize(store),
     seedKey: element.id || element.name || 'particles',
     speed: getParticleSpeed(store),
-    time: store.currentTime || 0,
+    time: getAnimationTime(store, timestamp),
     w: size.w,
     h: size.h,
   }
@@ -60,8 +60,13 @@ function getParticleSpeed(store) {
 }
 
 function getParticlePhase(options, seed) {
-  const offset = random(seed, 0) * options.count * 0.021
-  return (options.time * options.speed * 0.16 + offset) % 1
+  const offset = random(seed, 0)
+  return (options.time * options.speed * 0.22 + offset) % 1
+}
+
+function getAnimationTime(store, timestamp) {
+  if (Number.isFinite(timestamp) && timestamp > 0) return timestamp / 1000
+  return store.currentTime || 0
 }
 
 function getBasePoint(options, seed) {
@@ -74,10 +79,10 @@ function getBasePoint(options, seed) {
 
 function getTravelVector(options, seed) {
   if (options.direction === 'out') return getOutwardTravel(options, seed)
-  if (options.direction === 'left') return { x: options.w * 0.42, y: getCrossDrift(options, seed) }
-  if (options.direction === 'right') return { x: -options.w * 0.42, y: getCrossDrift(options, seed) }
-  if (options.direction === 'up') return { x: getCrossDrift(options, seed), y: options.h * 0.42 }
-  return { x: getCrossDrift(options, seed), y: -options.h * 0.42 }
+  if (options.direction === 'left') return { x: getHorizontalTravel(options), y: getCrossDrift(options, seed) }
+  if (options.direction === 'right') return { x: -getHorizontalTravel(options), y: getCrossDrift(options, seed) }
+  if (options.direction === 'up') return { x: getCrossDrift(options, seed), y: getVerticalTravel(options) }
+  return { x: getCrossDrift(options, seed), y: -getVerticalTravel(options) }
 }
 
 function createParticlePoint(base, travel, phase, options, seed) {
@@ -97,8 +102,16 @@ function getOutwardTravel(options, seed) {
   return { x: Math.cos(angle) * distance, y: Math.sin(angle) * distance }
 }
 
+function getHorizontalTravel(options) {
+  return options.w + getMargin(options) * 2
+}
+
+function getVerticalTravel(options) {
+  return options.h + getMargin(options) * 2
+}
+
 function getCrossDrift(options, seed) {
-  return getSigned(seed, 2) * Math.min(options.w, options.h) * 0.14
+  return getSigned(seed, 2) * Math.min(options.w, options.h) * 0.08
 }
 
 function getMargin(options) {
@@ -106,7 +119,7 @@ function getMargin(options) {
 }
 
 function getAlpha(phase) {
-  return 0.15 + Math.sin(Math.PI * phase) * 0.7
+  return Math.sin(Math.PI * phase) * 0.85
 }
 
 function easeOutSine(value) {
