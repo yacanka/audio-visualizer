@@ -6,6 +6,7 @@ export function createElementsState() {
   const selectedElementId = ref(null)
   const particleDirection = ref('right')
   const particleReactiveSpeed = ref(true)
+  const particleAttackSensitivity = ref(60)
   const particleFadeIn = ref(true)
   const particleFadeOut = ref(true)
   const particleSpeed = ref(1.2)
@@ -53,6 +54,7 @@ export function createElementsState() {
     selectedElementId,
     particleDirection,
     particleReactiveSpeed,
+    particleAttackSensitivity,
     particleFadeIn,
     particleFadeOut,
     particleSpeed,

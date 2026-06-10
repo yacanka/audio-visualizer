@@ -2,7 +2,7 @@ import { getRenderableFrequencyData, getRenderableTimeData } from './audioData.j
 import { drawBackdrop } from './backdrop.js'
 import { drawVisualizerShape } from './shapes.js'
 import { drawElements, drawProgressBar, drawTextOverlay } from './overlays.js'
-import { getParticleFrameBoost } from './particles.js'
+import { getParticleFrameMotion } from './particles.js'
 
 /** Create a stateful canvas renderer for animation frames. */
 export function createVisualizerRenderer(store) {
@@ -11,6 +11,8 @@ export function createVisualizerRenderer(store) {
   let driftDirection = 1
   let lastTime = 0
   let particleTime = 0
+  let particleEnergy = null
+  let particleImpulse = 0
 
   function drawFrame(canvas, getFrequencyData, getTimeData, timestamp) {
     const ctx = getRenderingContext(canvas, renderingContexts)
@@ -18,10 +20,16 @@ export function createVisualizerRenderer(store) {
     const deltaTime = lastTime ? timestamp - lastTime : 0
     lastTime = timestamp
 
+    const frameData = getFrameData(store, getFrequencyData, getTimeData)
+    const particleMotion = getParticleFrameMotion(store, frameData.frequency, particleEnergy, particleImpulse)
+    particleTime = updateParticleTime(particleTime, deltaTime, particleMotion.boost)
+    particleEnergy = particleMotion.energy
+    particleImpulse = particleMotion.impulse
+
     drawBackdrop(store, ctx, size.w, size.h)
     driftOffset = updateDrift(store, driftOffset, driftDirection, deltaTime)
     driftDirection = updateDriftDirection(driftOffset, driftDirection)
-    drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset, timestamp)
+    drawMainContent(store, ctx, size, frameData, driftOffset, particleTime)
   }
 
   return { drawFrame }
@@ -34,14 +42,13 @@ function getRenderingContext(canvas, renderingContexts) {
   return ctx
 }
 
-function drawMainContent(store, ctx, size, getFrequencyData, getTimeData, driftOffset, timestamp) {
-  const frameData = getFrameData(store, getFrequencyData, getTimeData)
+function drawMainContent(store, ctx, size, frameData, driftOffset, particleTime) {
   applyGlow(store, ctx)
   drawVisualizerShape(store, ctx, frameData, size, driftOffset)
   ctx.shadowBlur = 0
   drawTextOverlay(store, ctx, size, driftOffset)
   drawProgressBar(store, ctx, size)
-  drawElements(store, ctx, size, timestamp, frameData.frequency)
+  drawElements(store, ctx, size, particleTime * 1000, frameData.frequency)
 }
 
 function getFrameData(store, getFrequencyData, getTimeData) {
@@ -51,9 +58,9 @@ function getFrameData(store, getFrequencyData, getTimeData) {
   }
 }
 
-function updateParticleTime(store, currentTime, deltaTime, frequencyData) {
+function updateParticleTime(currentTime, deltaTime, boost) {
   const safeDelta = Math.max(0, deltaTime) / 1000
-  return currentTime + safeDelta * getParticleFrameBoost(store, frequencyData)
+  return currentTime + safeDelta * boost
 }
 
 function updateDrift(store, currentOffset, direction, deltaTime) {

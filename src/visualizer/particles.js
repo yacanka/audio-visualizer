@@ -6,7 +6,9 @@ const DEFAULT_PARTICLE_WANDER = 0
 const EDGE_MARGIN_RATIO = 0.04
 const FADE_DISTANCE = 0.18
 const MAX_ALPHA = 0.85
-const MAX_SPECTRUM_BOOST = 2.4
+const MAX_SPECTRUM_BOOST = 1.8
+const MAX_SPECTRUM_ATTACK_BOOST = 5.2
+const PARTICLE_ATTACK_DECAY = 0.84
 const MAX_WANDER_RATIO = 0.18
 
 /** Draw a deterministic, natural particle layer for the current frame. */
@@ -37,7 +39,7 @@ export function createParticleOptions(store, element, size, timestamp = 0, frequ
     maxSize: getMaxParticleSize(store),
     wander: getParticleWander(store),
     seedKey: element.id || element.name || 'particles',
-    speed: getParticleSpeed(store, frequencyData),
+    speed: getBaseParticleSpeed(store),
     time: getAnimationTime(store, timestamp),
     w: size.w,
     h: size.h,
@@ -66,16 +68,27 @@ function getParticleWander(store) {
   return clamp(value, 0, 100) / 100
 }
 
-function getParticleSpeed(store, frequencyData) {
+function getBaseParticleSpeed(store) {
   const baseSpeed = Number(store.particleSpeed) || DEFAULT_PARTICLE_SPEED
-  const spectrumBoost = getSpectrumBoost(store, frequencyData)
-  return clamp(baseSpeed, 0.1, 4) * spectrumBoost
+  return clamp(baseSpeed, 0.1, 4)
 }
 
-function getSpectrumBoost(store, frequencyData) {
-  if (!store.particleReactiveSpeed) return 1
+/** Return audio-reactive particle motion for one frame. */
+export function getParticleFrameMotion(store, frequencyData, previousEnergy = null, previousImpulse = 0) {
   const energy = getSpectrumEnergy(frequencyData, store.vizSpectrum)
-  return 1 + energy * MAX_SPECTRUM_BOOST
+  const impulse = getAttackImpulse(energy, previousEnergy, previousImpulse)
+  return { boost: getSpectrumBoost(store, energy, impulse), energy, impulse }
+}
+
+function getAttackImpulse(energy, previousEnergy, previousImpulse) {
+  const attack = Math.max(0, energy - (previousEnergy ?? energy))
+  return Math.max(previousImpulse * PARTICLE_ATTACK_DECAY, attack)
+}
+
+function getSpectrumBoost(store, energy, impulse) {
+  if (!store.particleReactiveSpeed) return 1
+  const sensitivity = clamp(Number(store.particleAttackSensitivity ?? 60), 0, 100) / 100
+  return 1 + energy * MAX_SPECTRUM_BOOST + impulse * MAX_SPECTRUM_ATTACK_BOOST * sensitivity
 }
 
 function getSpectrumEnergy(frequencyData, spectrumMode = 'wide') {
