@@ -19,6 +19,7 @@ function createStore(direction, time, overrides = {}) {
     particleFadeIn: true,
     particleFadeOut: true,
     particleMaxSize: 8,
+    particleWander: 0,
     particleMinSize: 3,
     particleReactiveSpeed: false,
     particleSpeed: 1.2,
@@ -65,6 +66,12 @@ describe('particles', () => {
     const faded = getParticlePoint(createOptions('right', 0), 2)
     const visible = getParticlePoint(createOptions('right', 0, { particleFadeIn: false, particleFadeOut: false }), 2)
     expect(visible.alpha).toBeGreaterThan(faded.alpha)
+  })
+
+  it('adds randomized sideways wander when intensity is configured', () => {
+    const straight = getParticlePoint(createOptions('right', 1, { particleWander: 0 }), 2)
+    const wandering = getParticlePoint(createOptions('right', 1, { particleWander: 100 }), 2)
+    expect(getDistance(straight, wandering)).toBeGreaterThan(1)
   })
 
   it('increases reactive speed for stronger bass spectrum energy', () => {

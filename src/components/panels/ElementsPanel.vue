@@ -61,6 +61,10 @@
         <label class="item-label">Max Size</label>
         <input type="number" min="1" max="80" step="0.5" v-model.number="store.particleMaxSize" />
       </div>
+      <div class="row mt-8">
+        <label class="item-label">Wander</label>
+        <input type="number" min="0" max="100" step="1" v-model.number="store.particleWander" />
+      </div>
       <button class="wide-action secondary" @click="store.addParticleElement()">Add Particles</button>
     </section>
 
