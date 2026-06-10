@@ -15,7 +15,7 @@ const baseSettings = {
   barCount: 128,
   barGap: 2,
   glowEnabled: true,
-  previewQuality: 480,
+  previewQuality: 720,
   selectedVisualizerLayer: 'layer-1',
   showArtist: true,
   showProgressBar: true,
