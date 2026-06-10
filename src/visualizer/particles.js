@@ -87,7 +87,8 @@ function getAttackImpulse(energy, previousEnergy, previousImpulse) {
 
 function getSpectrumBoost(store, energy, impulse) {
   if (!store.particleReactiveSpeed) return 1
-  return 1 + energy * MAX_SPECTRUM_BOOST + impulse * MAX_SPECTRUM_ATTACK_BOOST
+  const sensitivity = clamp(Number(store.particleAttackSensitivity ?? 60), 0, 100) / 100
+  return 1 + energy * MAX_SPECTRUM_BOOST + impulse * MAX_SPECTRUM_ATTACK_BOOST * sensitivity
 }
 
 function getSpectrumEnergy(frequencyData, spectrumMode = 'wide') {

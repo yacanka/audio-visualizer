@@ -35,6 +35,19 @@
           <span class="track" />
         </label>
       </div>
+      <div class="row mt-8" v-if="store.particleReactiveSpeed">
+        <label class="item-label">Particle Punch</label>
+        <span class="value-label">{{ store.particleAttackSensitivity }}%</span>
+      </div>
+      <input
+        v-if="store.particleReactiveSpeed"
+        class="slider-row"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        v-model.number="store.particleAttackSensitivity"
+      />
       <div class="row mt-8">
         <label class="item-label">Fade In</label>
         <label class="toggle">
@@ -144,6 +157,7 @@ function onMedia(event) {
 
 .actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .subtle { margin-top: 8px; color: var(--text-muted); }
+.value-label { font-size: 11px; color: var(--accent); font-weight: 600; }
 .text-input {
   width: 100%;
   background: var(--bg-secondary);

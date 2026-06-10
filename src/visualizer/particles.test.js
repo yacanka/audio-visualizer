@@ -22,6 +22,7 @@ function createStore(direction, time, overrides = {}) {
     particleWander: 0,
     particleMinSize: 3,
     particleReactiveSpeed: false,
+    particleAttackSensitivity: 60,
     particleSpeed: 1.2,
     vizSpectrum: 'wide',
     ...overrides,
@@ -90,6 +91,17 @@ describe('particles', () => {
     expect(loudAttack.boost).toBeGreaterThan(steadyLoud.boost)
     expect(decayedAttack.boost).toBeGreaterThan(steadyLoud.boost)
     expect(decayedAttack.boost).toBeLessThan(loudAttack.boost)
+  })
+
+  it('lets artists disable attack acceleration without disabling level boost', () => {
+    const store = createStore('right', 0, {
+      particleAttackSensitivity: 0,
+      particleReactiveSpeed: true,
+      vizSpectrum: 'bass',
+    })
+    const steadyLoud = getParticleFrameMotion(store, createFrequency(230), 230 / 255)
+    const loudAttack = getParticleFrameMotion(store, createFrequency(230), 12 / 255)
+    expect(loudAttack.boost).toBe(steadyLoud.boost)
   })
 
   it('keeps reactive particle movement moving forward when audio energy drops', () => {
