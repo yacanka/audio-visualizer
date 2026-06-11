@@ -35,10 +35,11 @@ describe('circular reflection geometry', () => {
     expect(getCircularReflectionMultiplier('vertical')).toBe(2)
   })
 
-  it('mirrors across mode on a 45 degree axis', () => {
+  it('duplicates across mode with origin symmetry', () => {
     const bars = collectAngles('across')
+    const firstSourceBars = bars.filter(bar => bar.index === 0)
     expect(bars).toHaveLength(8)
-    expectMirroredAcrossAxis(bars[0], bars[1], Math.PI / 4)
+    expect(firstSourceBars[1].angle - firstSourceBars[0].angle).toBeCloseTo(Math.PI, 8)
     expect(getCircularReflectionMultiplier('across')).toBe(2)
   })
 
@@ -50,11 +51,10 @@ describe('circular reflection geometry', () => {
     expect(getCircularReflectionMultiplier('3-way')).toBe(3)
   })
 
-  it('repeats circular bars in four 90 degree phases', () => {
-    const firstSourceBars = collectAngles('4-way').filter(bar => bar.index === 0)
-    expect(firstSourceBars).toHaveLength(4)
-    expect(firstSourceBars[1].angle - firstSourceBars[0].angle).toBeCloseTo(FULL_CIRCLE / 4, 8)
-    expect(firstSourceBars[3].angle - firstSourceBars[2].angle).toBeCloseTo(FULL_CIRCLE / 4, 8)
+  it('orders four-way as forward, reverse, forward, reverse around the circle', () => {
+    const bars = collectAngles('4-way', 2)
+    expect(bars.map(bar => bar.index)).toEqual([0, 1, 1, 0, 0, 1, 1, 0])
+    expect(bars.map(bar => bar.ratio)).toEqual([0.25, 0.75, 0.75, 0.25, 0.25, 0.75, 0.75, 0.25])
     expect(getCircularReflectionMultiplier('4-way')).toBe(4)
   })
 })
