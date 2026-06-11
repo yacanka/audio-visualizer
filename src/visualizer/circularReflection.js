@@ -1,90 +1,90 @@
 const FULL_CIRCLE = Math.PI * 2
 const HALF_PI = Math.PI / 2
 
-const PHASED_REFLECTIONS = {
-  none: { copies: 1, span: FULL_CIRCLE },
-  across: { copies: 2, span: Math.PI },
-  '3-way': { copies: 3, span: FULL_CIRCLE / 3 },
+const SEGMENTED_REFLECTIONS = {
+  none: 1,
+  across: 2,
+  '3-way': 3,
+  '4-way': 4,
 }
 
 const MIRRORED_REFLECTIONS = {
   vertical: -HALF_PI,
 }
 
-/** Visit each rendered circular bar angle for the requested reflection mode. */
+/** Visit exactly barCount rendered circular bar angles for the requested reflection mode. */
 export function forEachCircularBarAngle(reflection, barCount, visitAngle) {
   const safeBarCount = getSafeBarCount(barCount)
-  if (reflection === '4-way') return visitFourWayAngles(safeBarCount, visitAngle)
   if (reflection in MIRRORED_REFLECTIONS) {
     visitMirroredAngles(MIRRORED_REFLECTIONS[reflection], safeBarCount, visitAngle)
     return
   }
-  visitPhasedAngles(getPhasedLayout(reflection), safeBarCount, visitAngle)
+  visitSegmentedAngles(getSegmentCount(reflection), safeBarCount, visitAngle)
 }
 
-/** Return how many angular copies a circular reflection mode renders. */
-export function getCircularReflectionMultiplier(reflection) {
-  if (reflection === '4-way') return 4
+/** Return how many symmetry segments a circular reflection mode uses. */
+export function getCircularReflectionSegmentCount(reflection) {
   if (reflection in MIRRORED_REFLECTIONS) return 2
-  return getPhasedLayout(reflection).copies
+  return getSegmentCount(reflection)
 }
 
 function getSafeBarCount(barCount) {
   return Math.max(1, Math.floor(Number(barCount) || 1))
 }
 
-function getPhasedLayout(reflection) {
-  return PHASED_REFLECTIONS[reflection] || PHASED_REFLECTIONS.none
+function getSegmentCount(reflection) {
+  return SEGMENTED_REFLECTIONS[reflection] || SEGMENTED_REFLECTIONS.none
 }
 
-function visitPhasedAngles(layout, barCount, visitAngle) {
-  for (let index = 0; index < barCount; index++) {
-    visitPhaseCopies(layout, barCount, index, visitAngle)
+function visitSegmentedAngles(segmentCount, barCount, visitAngle) {
+  for (let outputIndex = 0; outputIndex < barCount; outputIndex++) {
+    visitSegmentedAngle(segmentCount, barCount, outputIndex, visitAngle)
   }
 }
 
-function visitPhaseCopies(layout, barCount, index, visitAngle) {
-  const ratio = getSourceRatio(layout, barCount, index)
-  const angle = -HALF_PI + ratio * layout.span
-  for (let copy = 0; copy < layout.copies; copy++) {
-    visitAngle(angle + copy * layout.span, index, ratio)
-  }
+function visitSegmentedAngle(segmentCount, barCount, outputIndex, visitAngle) {
+  const segment = getSegmentInfo(segmentCount, barCount, outputIndex)
+  const ratio = getSegmentedSourceRatio(segment, segmentCount, outputIndex, barCount)
+  const angle = -HALF_PI + getOutputRatio(outputIndex, barCount) * FULL_CIRCLE
+  visitAngle(angle, getSourceIndex(ratio, barCount), ratio)
 }
 
-function getSourceRatio(layout, barCount, index) {
-  if (layout.copies === 1) return index / barCount
-  return (index + 0.5) / barCount
+function getSegmentedSourceRatio(segment, segmentCount, outputIndex, barCount) {
+  if (segmentCount === 1) return getOutputRatio(outputIndex, barCount)
+  return getSegmentRatio(segment, segmentCount)
+}
+
+function getSegmentRatio(segment, segmentCount) {
+  const ratio = (segment.localIndex + 0.5) / segment.count
+  if (segmentCount === 4 && segment.index % 2 === 1) return 1 - ratio
+  return ratio
 }
 
 function visitMirroredAngles(axisAngle, barCount, visitAngle) {
-  for (let index = 0; index < barCount; index++) {
-    visitMirroredPair(axisAngle, barCount, index, visitAngle)
+  for (let outputIndex = 0; outputIndex < barCount; outputIndex++) {
+    visitMirroredAngle(axisAngle, barCount, outputIndex, visitAngle)
   }
 }
 
-function visitMirroredPair(axisAngle, barCount, index, visitAngle) {
-  const ratio = (index + 0.5) / barCount
+function visitMirroredAngle(axisAngle, barCount, outputIndex, visitAngle) {
+  const segment = getSegmentInfo(2, barCount, outputIndex)
+  const ratio = (segment.localIndex + 0.5) / segment.count
   const angle = axisAngle + ratio * Math.PI
-  visitAngle(angle, index, ratio)
-  visitAngle(axisAngle * 2 - angle, index, ratio)
+  const mirroredAngle = axisAngle * 2 - angle
+  visitAngle(segment.index === 0 ? angle : mirroredAngle, getSourceIndex(ratio, barCount), ratio)
 }
 
-function visitFourWayAngles(barCount, visitAngle) {
-  for (let segment = 0; segment < 4; segment++) {
-    visitFourWaySegment(segment, barCount, visitAngle)
-  }
+function getSegmentInfo(segmentCount, barCount, outputIndex) {
+  const index = Math.min(segmentCount - 1, Math.floor((outputIndex * segmentCount) / barCount))
+  const start = Math.ceil((index * barCount) / segmentCount)
+  const end = Math.ceil(((index + 1) * barCount) / segmentCount)
+  return { index, localIndex: outputIndex - start, count: end - start }
 }
 
-function visitFourWaySegment(segment, barCount, visitAngle) {
-  for (let index = 0; index < barCount; index++) {
-    const sourceIndex = getFourWaySourceIndex(segment, index, barCount)
-    const ratio = (sourceIndex + 0.5) / barCount
-    const angle = -HALF_PI + ((segment + (index + 0.5) / barCount) * FULL_CIRCLE) / 4
-    visitAngle(angle, sourceIndex, ratio)
-  }
+function getOutputRatio(outputIndex, barCount) {
+  return barCount === 1 ? 0 : outputIndex / barCount
 }
 
-function getFourWaySourceIndex(segment, index, barCount) {
-  if (segment % 2 === 0) return index
-  return barCount - index - 1
+function getSourceIndex(ratio, barCount) {
+  return Math.min(barCount - 1, Math.floor(ratio * barCount))
 }

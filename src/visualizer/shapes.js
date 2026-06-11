@@ -1,5 +1,5 @@
 import { getBarColor, lerpColor } from './colors.js'
-import { forEachCircularBarAngle, getCircularReflectionMultiplier } from './circularReflection.js'
+import { forEachCircularBarAngle } from './circularReflection.js'
 
 /** Draw the active visualizer shape. */
 export function drawVisualizerShape(store, ctx, data, size, driftOffset) {
@@ -149,18 +149,17 @@ function drawCircular(store, ctx, frequencyData, size, driftOffset) {
 
 function getCircleMetrics(store, size, driftOffset) {
   const radius = Math.min(size.w, size.h) * (store.visualizerDiameter / 220)
-  const multiplier = getCircularReflectionMultiplier(store.vizReflection)
   return {
     cx: size.w / 2 + driftOffset * 0.3,
     cy: size.h / 2,
     radius,
     maxBarHeight: Math.min(size.w, size.h) * 0.25,
-    lineWidth: getCircularLineWidth(radius, store.barCount, multiplier),
+    lineWidth: getCircularLineWidth(radius, store.barCount),
   }
 }
 
-function getCircularLineWidth(radius, barCount, multiplier) {
-  const safeBarCount = Math.max(1, barCount * multiplier)
+function getCircularLineWidth(radius, barCount) {
+  const safeBarCount = Math.max(1, barCount)
   return Math.max(1.5, (Math.PI * 2 * radius / safeBarCount) * 0.6)
 }
 
