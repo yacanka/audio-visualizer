@@ -1,4 +1,5 @@
 import { getBarColor, lerpColor } from './colors.js'
+import { forEachCircularBarAngle } from './circularReflection.js'
 
 /** Draw the active visualizer shape. */
 export function drawVisualizerShape(store, ctx, data, size, driftOffset) {
@@ -140,9 +141,9 @@ function drawCircular(store, ctx, frequencyData, size, driftOffset) {
   const { data, limit } = getSpectrumSlice(store, frequencyData)
   const circle = getCircleMetrics(store, size, driftOffset)
 
-  for (let index = 0; index < store.barCount; index++) {
-    drawCircularBar(store, ctx, data, limit, circle, index)
-  }
+  forEachCircularBarAngle(store.vizReflection, store.barCount, (angle, index, ratio) => {
+    drawCircularBar(store, ctx, data, limit, circle, { angle, index, ratio })
+  })
   drawInnerCircle(store, ctx, circle)
 }
 
@@ -153,22 +154,36 @@ function getCircleMetrics(store, size, driftOffset) {
     cy: size.h / 2,
     radius,
     maxBarHeight: Math.min(size.w, size.h) * 0.25,
-    lineWidth: Math.max(1.5, (Math.PI * 2 * radius / store.barCount) * 0.6),
+    lineWidth: getCircularLineWidth(radius, store.barCount),
   }
 }
 
-function drawCircularBar(store, ctx, data, limit, circle, index) {
-  const angle = (index / store.barCount) * Math.PI * 2 - Math.PI / 2
-  const height = (data[Math.round((index / store.barCount) * limit)] / 255) * store.sensitivity * circle.maxBarHeight
-  const start = pointOnCircle(circle, circle.radius, angle)
-  const end = pointOnCircle(circle, circle.radius + height, angle)
+function getCircularLineWidth(radius, barCount) {
+  const safeBarCount = Math.max(1, barCount)
+  return Math.max(1.5, (Math.PI * 2 * radius / safeBarCount) * 0.6)
+}
+
+function drawCircularBar(store, ctx, data, limit, circle, bar) {
+  const height = getCircularBarHeight(store, data, limit, circle, bar.ratio)
+  const start = pointOnCircle(circle, circle.radius, bar.angle)
+  const end = pointOnCircle(circle, circle.radius + height, bar.angle)
   ctx.beginPath()
-  ctx.strokeStyle = store.useGradient ? lerpColor(store.barColor, store.barColor2, index / store.barCount) : store.barColor
+  ctx.strokeStyle = getCircularBarColor(store, bar.index)
   ctx.lineWidth = circle.lineWidth
   ctx.lineCap = 'round'
   ctx.moveTo(start.x, start.y)
   ctx.lineTo(end.x, end.y)
   ctx.stroke()
+}
+
+function getCircularBarHeight(store, data, limit, circle, ratio) {
+  const index = Math.min(data.length - 1, Math.round(ratio * limit))
+  return (data[index] / 255) * store.sensitivity * circle.maxBarHeight
+}
+
+function getCircularBarColor(store, index) {
+  if (!store.useGradient) return store.barColor
+  return lerpColor(store.barColor, store.barColor2, index / store.barCount)
 }
 
 function pointOnCircle(circle, radius, angle) {
