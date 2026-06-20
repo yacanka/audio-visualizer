@@ -1,7 +1,18 @@
 <template>
-  <div class="canvas-wrapper">
+  <div
+    class="canvas-wrapper"
+    @dragenter.prevent="dragging = true"
+    @dragover.prevent="dragging = true"
+    @dragleave="onDragLeave"
+    @drop.prevent="onDrop"
+  >
     <!-- Drop zone overlay -->
-    <div v-if="!store.audioFile" class="drop-zone" :class="{ dragging }" @click="$emit('upload')" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="onDrop">
+    <div
+      v-if="!store.audioFile || dragging"
+      class="drop-zone"
+      :class="{ dragging, 'replace-audio': store.audioFile }"
+      @click="$emit('upload')"
+    >
       <div class="drop-content">
         <div class="drop-icon">
           <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
@@ -9,8 +20,8 @@
             <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="var(--accent)" opacity="0.8"/>
           </svg>
         </div>
-        <p class="drop-title">Ses Dosyası Yükle</p>
-        <p class="drop-sub">Sürükle bırak veya tıkla · MP3, WAV, FLAC, OGG</p>
+        <p class="drop-title">{{ store.audioFile ? 'Ses Dosyasını Değiştir' : 'Ses Dosyası Yükle' }}</p>
+        <p class="drop-sub">{{ store.audioFile ? 'Yeni ses dosyasını buraya bırak' : 'Sürükle bırak veya tıkla · MP3, WAV, FLAC, OGG' }}</p>
       </div>
     </div>
 
@@ -78,15 +89,16 @@ defineExpose({ audio, getCanvas })
 watch(() => store.smoothing, audio.updateAnalyserSettings)
 watch(() => store.fftSize, audio.updateAnalyserSettings)
 
-const emit = defineEmits(['upload'])
+const emit = defineEmits(['upload', 'audio-drop'])
 
-async function onDrop(e) {
+function onDragLeave(event) {
+  if (!event.currentTarget.contains(event.relatedTarget)) dragging.value = false
+}
+
+function onDrop(event) {
   dragging.value = false
-  const file = e.dataTransfer.files[0]
-  if (file && file.type.startsWith('audio/')) {
-    await audio.loadFile(file)
-    audio.play()
-  }
+  const file = event.dataTransfer?.files?.[0]
+  if (file?.type.startsWith('audio/')) emit('audio-drop', file)
 }
 </script>
 
@@ -115,6 +127,11 @@ async function onDrop(e) {
 
 .drop-zone.dragging {
   background: rgba(248, 84, 98, 0.08);
+}
+
+.drop-zone.replace-audio {
+  pointer-events: none;
+  backdrop-filter: blur(4px);
 }
 
 .drop-content {

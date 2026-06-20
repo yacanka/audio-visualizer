@@ -15,12 +15,7 @@
   </section>
 
   <section class="section">
-    <label class="section-label">Rumble</label>
-    <div class="chip-group">
-      <button v-for="option in rumbles" :key="option" :class="['chip', { active: store.visualizerRumble === option }]" @click="store.visualizerRumble = option">
-        {{ option }}
-      </button>
-    </div>
+    <PanelRange label="Rumble" v-model="store.visualizerRumble" :min="0" :max="100" />
     <PanelRange label="Bounce" v-model="store.visualizerBounce" :min="0" :max="100" />
     <ToggleRow label="Spin" v-model="store.visualizerSpin" />
   </section>
@@ -37,7 +32,6 @@ import PanelRange from '../PanelRange.vue'
 import ToggleRow from '../ToggleRow.vue'
 
 const store = useAppStore()
-const rumbles = ['none', 'medium', 'high']
 defineEmits(['smoothingChange'])
 </script>
 

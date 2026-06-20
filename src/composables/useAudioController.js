@@ -5,17 +5,21 @@ export function useAudioController(getAudio) {
   const waveformData = ref(null)
   let stopWaveformWatch = null
 
+  /** Load an audio file and synchronize playback UI state. */
+  async function loadAudioFile(file) {
+    const audio = getAudio()
+    if (!audio) return
+    await audio.loadFile(file)
+    watchWaveform(audio)
+    await audio.play()
+  }
+
+  /** Load the file selected by the hidden browser file input. */
   async function loadSelectedFile(event) {
     const file = event.target.files[0]
     if (!file) return
     event.target.value = ''
-
-    const audio = getAudio()
-    if (!audio) return
-    await audio.loadFile(file)
-    waveformData.value = audio.waveformData.value
-    watchWaveform(audio)
-    audio.play()
+    await loadAudioFile(file)
   }
 
   function watchWaveform(audio) {
@@ -57,6 +61,7 @@ export function useAudioController(getAudio) {
 
   return {
     waveformData,
+    loadAudioFile,
     loadSelectedFile,
     togglePlay,
     toggleMute,

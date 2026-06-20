@@ -3,36 +3,51 @@ import { drawBackdrop } from './backdrop.js'
 import { drawVisualizerShape } from './shapes.js'
 import { drawElements, drawProgressBar, drawTextOverlay } from './overlays.js'
 import { getParticleFrameMotion } from './particles.js'
+import { getVisualizerRumbleMotion } from './rumble.js'
+import { createGlowLayerRenderer } from './glowLayer.js'
 
 /** Create a stateful canvas renderer for animation frames. */
 export function createVisualizerRenderer(store) {
   const renderingContexts = new WeakMap()
-  let driftOffset = 0
-  let driftDirection = 1
-  let lastTime = 0
-  let particleTime = 0
-  let particleEnergy = null
-  let particleImpulse = 0
+  const glowRenderers = new WeakMap()
+  const state = createFrameState()
 
   function drawFrame(canvas, getFrequencyData, getTimeData, timestamp) {
     const ctx = getRenderingContext(canvas, renderingContexts)
     const size = { w: canvas.width, h: canvas.height }
-    const deltaTime = lastTime ? timestamp - lastTime : 0
-    lastTime = timestamp
-
+    const deltaTime = state.lastTime ? timestamp - state.lastTime : 0
     const frameData = getFrameData(store, getFrequencyData, getTimeData)
-    const particleMotion = getParticleFrameMotion(store, frameData.frequency, particleEnergy, particleImpulse)
-    particleTime = updateParticleTime(particleTime, deltaTime, particleMotion.boost)
-    particleEnergy = particleMotion.energy
-    particleImpulse = particleMotion.impulse
-
+    const particleMotion = updateParticleState(store, state, frameData.frequency, deltaTime)
+    updateDriftState(store, state, deltaTime)
+    const rumbleMotion = getVisualizerRumbleMotion(store, particleMotion, state.rumbleEnvelope, deltaTime)
+    state.rumbleEnvelope = rumbleMotion.envelope
+    state.lastTime = timestamp
     drawBackdrop(store, ctx, size.w, size.h)
-    driftOffset = updateDrift(store, driftOffset, driftDirection, deltaTime)
-    driftDirection = updateDriftDirection(driftOffset, driftDirection)
-    drawMainContent(store, ctx, size, frameData, driftOffset, particleTime)
+    const glowRenderer = getGlowRenderer(canvas, glowRenderers)
+    drawMainContent(store, ctx, size, frameData, state, rumbleMotion.scale, glowRenderer, timestamp)
   }
 
   return { drawFrame }
+}
+
+function createFrameState() {
+  return {
+    driftOffset: 0, driftDirection: 1, lastTime: 0, particleTime: 0,
+    particleEnergy: null, particleImpulse: 0, rumbleEnvelope: 0,
+  }
+}
+
+function updateParticleState(store, state, frequencyData, deltaTime) {
+  const motion = getParticleFrameMotion(store, frequencyData, state.particleEnergy, state.particleImpulse)
+  state.particleTime = updateParticleTime(state.particleTime, deltaTime, motion.boost)
+  state.particleEnergy = motion.energy
+  state.particleImpulse = motion.impulse
+  return motion
+}
+
+function updateDriftState(store, state, deltaTime) {
+  state.driftOffset = updateDrift(store, state.driftOffset, state.driftDirection, deltaTime)
+  state.driftDirection = updateDriftDirection(state.driftOffset, state.driftDirection)
 }
 
 function getRenderingContext(canvas, renderingContexts) {
@@ -42,13 +57,19 @@ function getRenderingContext(canvas, renderingContexts) {
   return ctx
 }
 
-function drawMainContent(store, ctx, size, frameData, driftOffset, particleTime) {
-  applyGlow(store, ctx)
-  drawVisualizerShape(store, ctx, frameData, size, driftOffset)
+function getGlowRenderer(canvas, glowRenderers) {
+  if (!glowRenderers.has(canvas)) glowRenderers.set(canvas, createGlowLayerRenderer(canvas))
+  return glowRenderers.get(canvas)
+}
+
+function drawMainContent(store, ctx, size, frameData, state, rumbleScale, glowRenderer, timestamp) {
   ctx.shadowBlur = 0
-  drawTextOverlay(store, ctx, size, driftOffset)
+  const motion = { driftOffset: state.driftOffset, rumbleScale }
+  glowRenderer.draw(store, ctx, frameData, size, motion, timestamp)
+  drawVisualizerShape(store, ctx, frameData, size, state.driftOffset, rumbleScale)
+  drawTextOverlay(store, ctx, size, state.driftOffset)
   drawProgressBar(store, ctx, size)
-  drawElements(store, ctx, size, particleTime * 1000, frameData.frequency)
+  drawElements(store, ctx, size, state.particleTime * 1000, frameData.frequency)
 }
 
 function getFrameData(store, getFrequencyData, getTimeData) {
@@ -70,17 +91,4 @@ function updateDrift(store, currentOffset, direction, deltaTime) {
 
 function updateDriftDirection(offset, currentDirection) {
   return Math.abs(offset) > 30 ? currentDirection * -1 : currentDirection
-}
-
-function applyGlow(store, ctx) {
-  ctx.shadowBlur = getShadowBlur(store)
-  if (store.glowEnabled) ctx.shadowColor = store.glowColor
-  if (store.fireEnabled) ctx.shadowColor = '#ff7a18'
-  if (store.shadowEnabled && !store.glowEnabled) ctx.shadowColor = 'rgba(0,0,0,0.6)'
-}
-
-function getShadowBlur(store) {
-  if (store.fireEnabled) return store.glowAmount + 12
-  if (store.glowEnabled) return store.glowAmount + store.glowScale * 0.4
-  return store.shadowEnabled ? 12 : 0
 }

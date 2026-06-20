@@ -47,7 +47,7 @@ export function createVisualizerState() {
     drift: ref(true),
     driftIntensity: ref(50),
     driftCustom: ref(false),
-    visualizerRumble: ref('none'),
+    visualizerRumble: ref(0),
     visualizerBounce: ref(20),
     visualizerSpin: ref(false),
     glowType: ref('outer'),

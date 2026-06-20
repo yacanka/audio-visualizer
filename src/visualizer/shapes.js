@@ -2,11 +2,11 @@ import { getBarColor, lerpColor } from './colors.js'
 import { forEachCircularBarAngle } from './circularReflection.js'
 
 /** Draw the active visualizer shape. */
-export function drawVisualizerShape(store, ctx, data, size, driftOffset) {
+export function drawVisualizerShape(store, ctx, data, size, driftOffset, rumbleScale = 1) {
   const shapeData = getShapeData(store, data)
   const shape = store.vizShape
   ctx.save()
-  applyVisualizerTransform(store, ctx, size)
+  applyVisualizerTransform(store, ctx, size, rumbleScale)
   if (shape === 'bars') drawBars(store, ctx, shapeData.frequency, size, false)
   if (shape === 'mirror') drawBars(store, ctx, shapeData.frequency, size, true)
   if (shape === 'wave') drawWave(store, ctx, shapeData.time, size)
@@ -20,12 +20,13 @@ function getShapeData(store, data) {
   return { frequency: [...data.frequency].reverse(), time: [...data.time].reverse() }
 }
 
-function applyVisualizerTransform(store, ctx, size) {
+function applyVisualizerTransform(store, ctx, size, rumbleScale) {
   const x = (store.visualizerXPosition / 100) * size.w * 0.5
   const y = (store.visualizerYPosition / 100) * size.h * 0.5
   const spin = store.visualizerSpin ? store.currentTime * 24 : 0
   ctx.translate(size.w / 2 + x, size.h / 2 + y)
   ctx.rotate(((store.visualizerRotation + spin) * Math.PI) / 180)
+  ctx.scale(rumbleScale, rumbleScale)
   ctx.translate(-size.w / 2, -size.h / 2)
 }
 

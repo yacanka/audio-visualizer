@@ -21,6 +21,7 @@
       <VisualizerCanvas
         ref="vizCanvas"
         @upload="triggerUpload"
+        @audio-drop="loadAudioFile"
       />
     </div>
 
@@ -81,6 +82,7 @@ const templateOpen = ref(true)
 
 const {
   waveformData,
+  loadAudioFile,
   loadSelectedFile,
   togglePlay,
   toggleMute,
