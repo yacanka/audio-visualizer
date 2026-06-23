@@ -1,5 +1,6 @@
 import { forEachCircularBarAngle } from './circularReflection.js'
 import { getLayerLayout, getRenderableLayers } from './layerLayout.js'
+import { createSpectrumMagnitudes } from './spectrumProcessing.js'
 /** Draw all visible visualizer layers using the selected style and layout mode. */
 export function drawLayeredVisualizer(store, ctx, frequencyData, size, driftOffset) {
   const layers = getRenderableLayers(store)
@@ -20,7 +21,7 @@ function drawLayer(store, ctx, data, size, driftOffset, layer, layout) {
 }
 function drawCircularLayer(store, ctx, data, size, driftOffset, layer, layout) {
   const circle = getCircleMetrics(store, size, driftOffset, layout)
-  const bars = collectCircularBars(store, data, circle)
+  const bars = collectCircularBars(store, data, circle, layout)
   if (store.vizStyle === 'solid') drawCircularSolid(ctx, bars, circle, layer)
   if (store.vizStyle === 'bar') bars.forEach(bar => drawCircularBar(store, ctx, bar, circle, layer))
   if (store.vizStyle === 'point') bars.forEach(bar => drawCircularPoint(store, ctx, bar, layer))
@@ -32,15 +33,16 @@ function getCircleMetrics(store, size, driftOffset, layout) {
   return {
     cx: size.w / 2 + driftOffset * 0.3,
     cy: size.h / 2,
-    radius: baseRadius * layout.widthScale * scale,
+    radius: baseRadius * (1 + layout.baseOffsetScale) * scale,
     maxHeight: Math.min(size.w, size.h) * 0.25 * layout.heightScale * scale,
   }
 }
 
-function collectCircularBars(store, data, circle) {
+function collectCircularBars(store, data, circle, layout) {
   const bars = []
+  const magnitudes = createSpectrumMagnitudes(store, data, store.barCount, layout, shouldLoopSpectrum(store))
   forEachCircularBarAngle(store.vizReflection, store.barCount, (angle, _index, ratio) => {
-    const height = getMagnitude(store, data, ratio) * circle.maxHeight
+    const height = getMagnitudeAtRatio(magnitudes, ratio) * circle.maxHeight
     bars.push({ angle, height, inner: pointOnCircle(circle, circle.radius, angle), outer: pointOnCircle(circle, circle.radius + height, angle) })
   })
   bars.sort((first, second) => first.angle - second.angle)
@@ -74,7 +76,7 @@ function drawCircularPoint(store, ctx, bar, layer) {
 
 function drawFlatLayer(store, ctx, data, size, layer, layout) {
   const metrics = getFlatMetrics(store, size, layout)
-  const points = collectFlatPoints(store, data, metrics)
+  const points = collectFlatPoints(store, data, metrics, layout)
   if (store.vizStyle === 'solid') drawFlatSolid(store, ctx, points, metrics, layer)
   if (store.vizStyle === 'bar') points.forEach(point => drawFlatBar(store, ctx, point, metrics, layer))
   if (store.vizStyle === 'point') points.forEach(point => drawFlatPoint(store, ctx, point, metrics, layer))
@@ -82,21 +84,24 @@ function drawFlatLayer(store, ctx, data, size, layer, layout) {
 
 function getFlatMetrics(store, size, layout) {
   const scale = layout.overallScale
-  const width = size.w * (store.visualizerWidth / 100) * layout.widthScale * scale
+  const width = size.w * (store.visualizerWidth / 100) * scale
+  const baseOffset = size.h * layout.baseOffsetScale * 0.2
+  const baseHeight = (store.visualizerBaseHeight / 100) * size.h * 0.4
   return {
-    baseline: size.h / 2 + (store.visualizerBaseHeight / 100) * size.h * 0.4,
+    baseline: size.h / 2 + (baseHeight - baseOffset) * scale,
     height: size.h * (store.visualizerWaveHeight / 100) * layout.heightScale * scale,
     startX: (size.w - width) / 2,
     width,
   }
 }
 
-function collectFlatPoints(store, data, metrics) {
+function collectFlatPoints(store, data, metrics, layout) {
   const count = Math.max(4, Math.floor(store.barCount))
+  const magnitudes = createSpectrumMagnitudes(store, data, count, layout)
   return Array.from({ length: count }, (_, index) => {
     const ratio = count === 1 ? 0 : index / (count - 1)
     const sourceRatio = isHorizontalMirror(store.vizReflection) ? Math.abs(ratio * 2 - 1) : ratio
-    return { x: metrics.startX + ratio * metrics.width, height: getMagnitude(store, data, sourceRatio) * metrics.height }
+    return { x: metrics.startX + ratio * metrics.width, height: getMagnitudeAtRatio(magnitudes, sourceRatio) * metrics.height }
   })
 }
 
@@ -125,24 +130,12 @@ function drawFlatPoint(store, ctx, point, metrics, layer) {
   if (isVerticalMirror(store.vizReflection)) drawPoint(ctx, point.x, metrics.baseline + point.height, store.visualizerPointRadius, layer)
 }
 
-function getMagnitude(store, data, ratio) {
-  if (!data?.length) return 0
-  const limit = Math.max(1, Math.floor(data.length * (store.vizSpectrum === 'bass' ? 0.25 : 0.85)))
-  const index = Math.min(data.length - 1, Math.round(ratio * (limit - 1)))
-  if (!store.vizSmooth) return Math.min(1, (data[index] / 255) * store.sensitivity)
-  return Math.min(1, (getAverage(data, index, 2) / 255) * store.sensitivity)
-}
-
-function getAverage(data, index, radius) {
-  let total = 0
-  let count = 0
-  for (let offset = -radius; offset <= radius; offset++) {
-    const sample = data[index + offset]
-    if (sample === undefined) continue
-    total += sample
-    count++
-  }
-  return count ? total / count : 0
+function getMagnitudeAtRatio(magnitudes, ratio) {
+  if (!magnitudes.length) return 0
+  const position = Math.min(1, Math.max(0, ratio)) * (magnitudes.length - 1)
+  const lower = magnitudes[Math.floor(position)]
+  const upper = magnitudes[Math.ceil(position)]
+  return lower + (upper - lower) * (position % 1)
 }
 
 function drawLine(ctx, start, end, color, width) {
@@ -187,6 +180,10 @@ function isHorizontalMirror(reflection) {
 
 function isVerticalMirror(reflection) {
   return reflection === 'two-side' || reflection === 'combo'
+}
+
+function shouldLoopSpectrum(store) {
+  return store.vizShape === 'circular' && store.vizReflection !== 'vertical'
 }
 
 function drawCenterCutout(store, ctx, size, driftOffset) {

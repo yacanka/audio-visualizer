@@ -1,20 +1,32 @@
-const LAYOUT_FACTORS = {
-  web: { width: 0.4, height: 0, scale: 0 },
-  stack: { width: 0, height: 0.75, scale: 0 },
-  combo: { width: 0.4, height: 0.75, scale: 0 },
-  scale: { width: 0, height: 0, scale: 0.6 },
-}
+const BASE_SMOOTHING_PASSES = 4
+const BREADTH_MODES = new Set(['web', 'combo'])
+const HEIGHT_MODES = new Set(['stack', 'combo'])
+const LAYOUT_MODES = new Set(['web', 'stack', 'combo', 'scale'])
 
 /** Return the relative geometry for one Specterr-style visualizer layer. */
 export function getLayerLayout(mode, layerIndex, layerCount, separationPercent) {
-  const depth = getLayerDepth(mode, layerIndex, layerCount)
-  const separation = clamp(Number(separationPercent) / 100, 0, 1)
-  const factors = LAYOUT_FACTORS[mode] || LAYOUT_FACTORS.web
+  const safeMode = LAYOUT_MODES.has(mode) ? mode : 'web'
+  const depth = getLayerDepth(safeMode, layerIndex, layerCount)
+  const separation = clamp(Number(separationPercent) / 50, 0, 2)
+  const broadensWave = BREADTH_MODES.has(safeMode)
+  const scalesLayer = safeMode === 'scale'
   return {
-    widthScale: 1 + depth * separation * factors.width,
-    heightScale: 1 + depth * separation * factors.height,
-    overallScale: 1 + depth * separation * factors.scale,
+    heightScale: getHeightScale(safeMode, depth, separation),
+    overallScale: scalesLayer ? 1 + depth * separation * 0.1 : 1,
+    baseOffsetScale: scalesLayer ? depth * separation * 0.15 : 0,
+    smoothingPasses: getSmoothingPasses(broadensWave, depth, separation),
+    peakShiftPasses: broadensWave ? Math.floor(4 * depth * separation) : 0,
   }
+}
+
+function getHeightScale(mode, depth, separation) {
+  if (!HEIGHT_MODES.has(mode)) return 1
+  return 0.25 + depth * separation * 0.25
+}
+
+function getSmoothingPasses(broadensWave, depth, separation) {
+  if (!broadensWave || depth === 0) return BASE_SMOOTHING_PASSES
+  return BASE_SMOOTHING_PASSES + Math.floor(4 * (depth + 1) * separation)
 }
 
 /** Return normalized, snapshot-compatible layer records for rendering. */
