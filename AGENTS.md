@@ -13,7 +13,6 @@
 ## Repo-specific conventions
 - Pinia app state is assembled in `src/stores/app.js` from `src/stores/modules/*`; add new state in a module and expose it through `useAppStore`.
 - Undo/redo tracks only refs included by `createTrackedRefs()` in `src/stores/app.js`; transient fields must stay excluded unless history restore should affect them.
-- Project save/export payloads use `store.createSnapshot()`. New persistent settings must be snapshot-safe JSON values.
 - Visualizer drawing is split by responsibility: `renderer.js` orchestrates, `backdrop.js`, `shapes.js`, and `overlays.js` draw.
 
 ## Change safety rules
