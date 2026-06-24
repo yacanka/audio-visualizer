@@ -1,11 +1,11 @@
+import { createParticleOpacityOptions, getParticleAlpha } from './particleOpacity.js'
+
 const DEFAULT_PARTICLE_COUNT = 42
 const DEFAULT_PARTICLE_SPEED = 1.2
 const DEFAULT_PARTICLE_MIN_SIZE = 2
 const DEFAULT_PARTICLE_MAX_SIZE = 5
 const DEFAULT_PARTICLE_WANDER = 0
 const EDGE_MARGIN_RATIO = 0.04
-const FADE_DISTANCE = 0.18
-const MAX_ALPHA = 0.85
 const MAX_SPECTRUM_BOOST = 1.8
 const MAX_SPECTRUM_ATTACK_BOOST = 150
 const PARTICLE_ATTACK_DECAY = 0.84
@@ -37,6 +37,7 @@ export function createParticleOptions(store, element, size, timestamp = 0, frequ
     fadeIn: store.particleFadeIn !== false,
     fadeOut: store.particleFadeOut !== false,
     maxSize: getMaxParticleSize(store),
+    ...createParticleOpacityOptions(store),
     wander: getParticleWander(store),
     seedKey: element.id || element.name || 'particles',
     speed: getBaseParticleSpeed(store),
@@ -55,7 +56,7 @@ function drawParticle(ctx, options, index) {
 }
 
 function getMinParticleSize(store) {
-  return clamp(Number(store.particleMinSize) || DEFAULT_PARTICLE_MIN_SIZE, 1, 40)
+  return clamp(Number(store.particleMinSize) || DEFAULT_PARTICLE_MIN_SIZE, 1, 80)
 }
 
 function getMaxParticleSize(store) {
@@ -136,7 +137,9 @@ function createParticlePoint(base, travel, phase, options, seed) {
   const eased = easeOutSine(phase)
   const radius = interpolate(options.minSize, options.maxSize, random(seed, 4))
   const wander = getWanderOffset(options, seed, phase, travel)
-  return { x: base.x + travel.x * eased + wander.x, y: base.y + travel.y * eased + wander.y, radius, alpha: getAlpha(phase, options) }
+  const point = { x: base.x + travel.x * eased + wander.x, y: base.y + travel.y * eased + wander.y }
+  const opacity = interpolate(options.minOpacity, options.maxOpacity, random(seed, 7))
+  return { ...point, radius, alpha: getParticleAlpha(point, phase, options, opacity) }
 }
 
 function getWanderOffset(options, seed, phase, travel) {
@@ -172,13 +175,6 @@ function getVerticalTravel(options) { return options.h + getMargin(options) * 2 
 function getCrossDrift(options, seed) { return getSigned(seed, 2) * Math.min(options.w, options.h) * 0.08 }
 function getMargin(options) { return Math.min(options.w, options.h) * EDGE_MARGIN_RATIO }
 
-function getAlpha(phase, options) {
-  const fadeIn = options.fadeIn ? getFadeRatio(phase) : 1
-  const fadeOut = options.fadeOut ? getFadeRatio(1 - phase) : 1
-  return MAX_ALPHA * Math.min(fadeIn, fadeOut)
-}
-
-function getFadeRatio(distance) { return clamp(distance / FADE_DISTANCE, 0, 1) }
 function easeOutSine(value) { return Math.sin((value * Math.PI) / 2) }
 function interpolate(minimum, maximum, amount) { return minimum + (maximum - minimum) * amount }
 function getSigned(seed, salt) { return random(seed, salt) * 2 - 1 }

@@ -1,7 +1,7 @@
 import { getRenderableFrequencyData, getRenderableTimeData } from './audioData.js'
 import { drawBackdrop } from './backdrop.js'
 import { drawVisualizerShape } from './shapes.js'
-import { drawElements, drawProgressBar, drawTextOverlay } from './overlays.js'
+import { drawElements, drawParticleElements, drawProgressBar, drawTextOverlay } from './overlays.js'
 import { getParticleFrameMotion } from './particles.js'
 import { getVisualizerRumbleMotion } from './rumble.js'
 import { createGlowLayerRenderer } from './glowLayer.js'
@@ -39,7 +39,7 @@ function createFrameState() {
 
 function updateParticleState(store, state, frequencyData, deltaTime) {
   const motion = getParticleFrameMotion(store, frequencyData, state.particleEnergy, state.particleImpulse)
-  state.particleTime = updateParticleTime(state.particleTime, deltaTime, motion.boost)
+  state.particleTime = updateParticleTime(store, state.particleTime, deltaTime, motion.boost)
   state.particleEnergy = motion.energy
   state.particleImpulse = motion.impulse
   return motion
@@ -65,6 +65,7 @@ function getGlowRenderer(canvas, glowRenderers) {
 function drawMainContent(store, ctx, size, frameData, state, rumbleScale, glowRenderer, timestamp) {
   ctx.shadowBlur = 0
   const motion = { driftOffset: state.driftOffset, rumbleScale }
+  drawParticleElements(store, ctx, size, state.particleTime * 1000, frameData.frequency)
   glowRenderer.draw(store, ctx, frameData, size, motion, timestamp)
   drawVisualizerShape(store, ctx, frameData, size, state.driftOffset, rumbleScale)
   drawTextOverlay(store, ctx, size, state.driftOffset)
@@ -79,7 +80,8 @@ function getFrameData(store, getFrequencyData, getTimeData) {
   }
 }
 
-function updateParticleTime(currentTime, deltaTime, boost) {
+function updateParticleTime(store, currentTime, deltaTime, boost) {
+  if (!store.isPlaying) return currentTime
   const safeDelta = Math.max(0, deltaTime) / 1000
   return currentTime + safeDelta * boost
 }

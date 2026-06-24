@@ -12,6 +12,8 @@ export function createElementsState() {
   const particleSpeed = ref(1.2)
   const particleMinSize = ref(2)
   const particleMaxSize = ref(5)
+  const particleMinOpacity = ref(35)
+  const particleMaxOpacity = ref(85)
   const particleWander = ref(25)
 
   /** Add a movable text element to the canvas timeline. */
@@ -60,6 +62,8 @@ export function createElementsState() {
     particleSpeed,
     particleMinSize,
     particleMaxSize,
+    particleMinOpacity,
+    particleMaxOpacity,
     particleWander,
     addTextElement,
     addImageElement,

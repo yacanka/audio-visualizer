@@ -66,14 +66,7 @@
         <label class="item-label">Scatter Speed</label>
         <input type="number" min="0.1" max="4" step="0.1" v-model.number="store.particleSpeed" />
       </div>
-      <div class="row mt-8">
-        <label class="item-label">Min Size</label>
-        <input type="number" min="1" max="40" step="0.5" v-model.number="store.particleMinSize" />
-      </div>
-      <div class="row mt-8">
-        <label class="item-label">Max Size</label>
-        <input type="number" min="1" max="80" step="0.5" v-model.number="store.particleMaxSize" />
-      </div>
+      <ParticleRangeControls />
       <div class="row mt-8">
         <label class="item-label">Wander</label>
         <input type="number" min="0" max="100" step="1" v-model.number="store.particleWander" />
@@ -129,6 +122,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useAppStore } from '../../stores/app.js'
+import ParticleRangeControls from './ParticleRangeControls.vue'
 
 const store = useAppStore()
 const mediaInput = ref(null)

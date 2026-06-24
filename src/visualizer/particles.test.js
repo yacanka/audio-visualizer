@@ -21,6 +21,8 @@ function createStore(direction, time, overrides = {}) {
     particleMaxSize: 8,
     particleWander: 0,
     particleMinSize: 3,
+    particleMinOpacity: 35,
+    particleMaxOpacity: 85,
     particleReactiveSpeed: false,
     particleAttackSensitivity: 60,
     particleSpeed: 1.2,
@@ -61,6 +63,20 @@ describe('particles', () => {
     const point = getParticlePoint(createOptions('up'), 3)
     expect(point.radius).toBeGreaterThanOrEqual(3)
     expect(point.radius).toBeLessThanOrEqual(8)
+  })
+
+  it('assigns each particle an opacity inside the configured range', () => {
+    const options = createOptions('right', 1, {
+      particleFadeIn: false,
+      particleFadeOut: false,
+      particleMinOpacity: 20,
+      particleMaxOpacity: 60,
+    })
+    const alphas = Array.from({ length: 12 }, (_, index) => getParticlePoint(options, index).alpha)
+
+    expect(Math.min(...alphas)).toBeGreaterThanOrEqual(0.2)
+    expect(Math.max(...alphas)).toBeLessThanOrEqual(0.6)
+    expect(new Set(alphas).size).toBeGreaterThan(1)
   })
 
   it('lets artists disable fade in and fade out independently', () => {

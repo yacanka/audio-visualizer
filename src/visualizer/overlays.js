@@ -21,9 +21,18 @@ export function drawProgressBar(store, ctx, size) {
   ctx.fillRect(0, size.h - 3, size.w * progress, 3)
 }
 
-/** Draw user-added elements over the visualizer preview. */
+/** Draw particle elements behind the visualizer shape. */
+export function drawParticleElements(store, ctx, size, timestamp = 0, frequencyData = null) {
+  store.elements
+    .filter(element => element.type === 'particles')
+    .forEach(element => drawParticleLayer(store, ctx, element, size, timestamp, frequencyData))
+}
+
+/** Draw non-particle user elements over the visualizer preview. */
 export function drawElements(store, ctx, size, timestamp = 0, frequencyData = null) {
-  store.elements.forEach(element => drawElement(store, ctx, element, size, timestamp, frequencyData))
+  store.elements
+    .filter(element => element.type !== 'particles')
+    .forEach(element => drawElement(ctx, element, size))
 }
 
 function getTextLayout(store, size) {
@@ -72,11 +81,7 @@ function drawLyrics(store, ctx, size) {
   ctx.shadowBlur = 0
 }
 
-function drawElement(store, ctx, element, size, timestamp, frequencyData) {
-  if (element.type === 'particles') {
-    drawParticleLayer(store, ctx, element, size, timestamp, frequencyData)
-    return
-  }
+function drawElement(ctx, element, size) {
   const point = getElementPoint(element, size)
   if (element.type === 'text') drawTextElement(ctx, element, point.x, point.y)
   if (element.type === 'image') drawImageElement(ctx, element, point.x, point.y, size)
