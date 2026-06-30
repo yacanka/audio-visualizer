@@ -11,19 +11,21 @@ const audio = {
   getTimeDomainData: vi.fn(),
   updateAnalyserSettings: vi.fn(),
 }
+const visualizer = {
+  dispose: vi.fn(),
+  drawFrame: vi.fn(),
+  getCanvasDimensions: () => ({ w: 1920, h: 1080 }),
+  prepare: vi.fn(() => Promise.resolve(true)),
+}
 
 vi.mock('../stores/app.js', () => ({ useAppStore: () => store }))
 vi.mock('../composables/useAudio.js', () => ({ useAudio: () => audio }))
-vi.mock('../composables/useVisualizer.js', () => ({
-  useVisualizer: () => ({
-    getCanvasDimensions: () => ({ w: 1920, h: 1080 }),
-    drawFrame: vi.fn(),
-  }),
-}))
+vi.mock('../composables/useVisualizer.js', () => ({ useVisualizer: () => visualizer }))
 
 describe('VisualizerCanvas', () => {
   beforeEach(() => {
     store.audioFile = null
+    vi.clearAllMocks()
     vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1))
     vi.stubGlobal('cancelAnimationFrame', vi.fn())
   })

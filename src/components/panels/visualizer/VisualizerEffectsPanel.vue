@@ -22,6 +22,17 @@
     <ToggleRow label="Shadow" v-model="store.shadowEnabled" />
     <ToggleRow label="Progress Bar" v-model="store.showProgressBar" />
   </section>
+
+  <section class="section">
+    <ToggleRow label="WebGL Displacement" v-model="store.webglDisplacementEnabled" />
+    <PanelRange
+      v-if="store.webglDisplacementEnabled"
+      label="Displacement"
+      v-model="store.webglDisplacementIntensity"
+      :min="0"
+      :max="60"
+    />
+  </section>
 </template>
 
 <script setup>

@@ -26,6 +26,13 @@ vi.mock('./rumble.js', () => ({
 vi.mock('./glowLayer.js', () => ({
   createGlowLayerRenderer: vi.fn(() => ({ draw: vi.fn() })),
 }))
+vi.mock('./pixiRenderer.js', () => ({
+  createPixiVisualizerRenderer: vi.fn(() => ({
+    dispose: vi.fn(),
+    drawFrame: vi.fn(() => false),
+    prepare: vi.fn(() => Promise.resolve(false)),
+  })),
+}))
 
 describe('visualizer renderer', () => {
   beforeEach(() => vi.clearAllMocks())

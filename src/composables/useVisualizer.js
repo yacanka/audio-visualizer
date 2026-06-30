@@ -8,7 +8,9 @@ export function useVisualizer() {
   const renderer = createVisualizerRenderer(store)
 
   return {
+    dispose: renderer.dispose,
     drawFrame: renderer.drawFrame,
     getCanvasDimensions: () => getCanvasDimensions(store),
+    prepare: renderer.prepare,
   }
 }

@@ -61,6 +61,7 @@ const containerStyle = computed(() => {
 })
 
 let animId = null
+let disposed = false
 
 function loop(ts) {
   if (!canvasRef.value) return
@@ -70,13 +71,21 @@ function loop(ts) {
 
 onMounted(() => {
   audio.setup(audioEl.value)
-  animId = requestAnimationFrame(loop)
+  preparePreview()
 })
 
 onUnmounted(() => {
+  disposed = true
   if (animId) cancelAnimationFrame(animId)
+  viz.dispose()
   audio.dispose()
 })
+
+async function preparePreview() {
+  if (!canvasRef.value) return
+  await viz.prepare(canvasRef.value)
+  if (!disposed) animId = requestAnimationFrame(loop)
+}
 
 function getCanvas() {
   return canvasRef.value

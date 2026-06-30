@@ -57,6 +57,7 @@ function createEffectState() {
     useGradient: ref(true), gradientDir: ref('vertical'), smoothing: ref(0.82),
     glowEnabled: ref(true), glowAmount: ref(15), glowColor: ref('#f85462'),
     glowType: ref('outer'), glowScale: ref(10), fireEnabled: ref(false), shadowEnabled: ref(false),
+    webglDisplacementEnabled: ref(true), webglDisplacementIntensity: ref(10),
   }
 }
 
