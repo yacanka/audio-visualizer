@@ -42,13 +42,19 @@ function createLayerActions(state) {
 
 function createShapeState() {
   return {
-    vizShape: ref('bars'), vizStyle: ref('bar'), vizReflection: ref('none'), vizLayerMode: ref('web'),
-    vizSpectrum: ref('bass'), barCount: ref(80), barGap: ref(2), barRounding: ref(4),
+    visualizerMode: ref('classic'), vizShape: ref('bars'), vizStyle: ref('bar'),
+    vizReflection: ref('none'), vizLayerMode: ref('web'), vizSpectrum: ref('bass'),
+    barCount: ref(80), barGap: ref(2), barRounding: ref(4),
     visualizerBarWidth: ref(75), visualizerPointRadius: ref(5), sensitivity: ref(1),
     vizSmooth: ref(true), vizInvert: ref(false), visualizerDiameter: ref(40),
     visualizerImageSize: ref(95), visualizerWidth: ref(90), visualizerBaseHeight: ref(0),
     visualizerXPosition: ref(0), visualizerYPosition: ref(0), visualizerWaveHeight: ref(30),
     visualizerSeparation: ref(40), visualizerRotation: ref(0), centerCutout: ref(0),
+    soundVisibleColor: ref('#f6c453'), soundVisibleCoreColor: ref('#fff4b8'),
+    soundVisibleGlow: ref(70), soundVisibleLineWidth: ref(2),
+    soundVisibleShardAmount: ref(18), soundVisibleShardSize: ref(22),
+    soundVisibleShardWindDirection: ref(0), soundVisibleShardTurbulence: ref(45),
+    soundVisibleShardFadeDistance: ref(100),
   }
 }
 

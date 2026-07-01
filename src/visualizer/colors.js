@@ -21,10 +21,25 @@ export function lerpColor(colorA, colorB, amount) {
   return `rgb(${red},${green},${blue})`
 }
 
+/** Convert a hex color to an rgba string with a safe alpha range. */
+export function toRgba(color, alpha = 1, fallback = '#f7d774') {
+  const safeColor = isHexColor(color) ? color : fallback
+  const [red, green, blue] = parseHexColor(safeColor)
+  return `rgba(${red},${green},${blue},${clamp(alpha, 0, 1)})`
+}
+
 function parseHexColor(value) {
   return [
     parseInt(value.slice(1, 3), 16),
     parseInt(value.slice(3, 5), 16),
     parseInt(value.slice(5, 7), 16),
   ]
+}
+
+function isHexColor(value) {
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
+}
+
+function clamp(value, minimum, maximum) {
+  return Math.min(maximum, Math.max(minimum, value))
 }

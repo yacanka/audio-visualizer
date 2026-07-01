@@ -56,6 +56,9 @@ describe('visualizer renderer', () => {
       { w: 1280, h: 720 },
       0,
       1.08,
+      100,
+      0,
+      { particles: [] },
     )
     expect(createGlowLayerRenderer).toHaveBeenCalledWith(canvas)
   })

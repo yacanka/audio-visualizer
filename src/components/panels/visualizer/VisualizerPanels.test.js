@@ -35,4 +35,19 @@ describe('visualizer panels', () => {
     expect(store.vizLayerMode).toBe('scale')
     expect(wrapper.text()).toContain('Point Radius')
   })
+
+  it('switches the Shape tab into SoundVisible mode controls', async () => {
+    const wrapper = mount(VisualizerShapePanel)
+
+    const soundVisibleButton = wrapper.findAll('button').find(button => button.text() === 'SoundVisible')
+    await soundVisibleButton.trigger('click')
+
+    expect(store.visualizerMode).toBe('soundvisible')
+    expect(wrapper.text()).toContain('Beam Color')
+    expect(wrapper.text()).toContain('Beam Glow')
+    expect(wrapper.text()).toContain('Wind Direction')
+    expect(wrapper.text()).toContain('Turbulence')
+    expect(wrapper.text()).toContain('Fade Distance')
+    expect(wrapper.text()).not.toContain('Reflection')
+  })
 })

@@ -23,7 +23,7 @@ export function createCanvasVisualizerRenderer(store) {
     state.rumbleEnvelope = rumbleMotion.envelope
     state.lastTime = timestamp
     drawBackdrop(store, ctx, size.w, size.h)
-    drawMainContent(store, ctx, size, frameData, state, rumbleMotion.scale, getGlowRenderer(canvas, glowRenderers), timestamp)
+    drawMainContent(store, ctx, size, frameData, state, rumbleMotion.scale, getGlowRenderer(canvas, glowRenderers), timestamp, deltaTime)
   }
 
   return { drawFrame }
@@ -32,7 +32,7 @@ export function createCanvasVisualizerRenderer(store) {
 function createFrameState() {
   return {
     driftOffset: 0, driftDirection: 1, lastTime: 0, particleTime: 0,
-    particleEnergy: null, particleImpulse: 0, rumbleEnvelope: 0,
+    particleEnergy: null, particleImpulse: 0, rumbleEnvelope: 0, soundVisibleShards: { particles: [] },
   }
 }
 
@@ -61,12 +61,12 @@ function getGlowRenderer(canvas, glowRenderers) {
   return glowRenderers.get(canvas)
 }
 
-function drawMainContent(store, ctx, size, frameData, state, rumbleScale, glowRenderer, timestamp) {
+function drawMainContent(store, ctx, size, frameData, state, rumbleScale, glowRenderer, timestamp, deltaTime) {
   ctx.shadowBlur = 0
   const motion = { driftOffset: state.driftOffset, rumbleScale }
   drawParticleElements(store, ctx, size, state.particleTime * 1000, frameData.frequency)
   glowRenderer.draw(store, ctx, frameData, size, motion, timestamp)
-  drawVisualizerShape(store, ctx, frameData, size, state.driftOffset, rumbleScale)
+  drawVisualizerShape(store, ctx, frameData, size, state.driftOffset, rumbleScale, timestamp, deltaTime, state.soundVisibleShards)
   drawTextOverlay(store, ctx, size, state.driftOffset)
   drawProgressBar(store, ctx, size)
   drawElements(store, ctx, size, state.particleTime * 1000, frameData.frequency)

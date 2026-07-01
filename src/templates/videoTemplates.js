@@ -20,8 +20,18 @@ const baseSettings = {
   showArtist: true,
   showProgressBar: true,
   showTitle: true,
+  soundVisibleColor: '#f6c453',
+  soundVisibleCoreColor: '#fff4b8',
+  soundVisibleGlow: 70,
+  soundVisibleLineWidth: 2,
+  soundVisibleShardFadeDistance: 100,
+  soundVisibleShardAmount: 18,
+  soundVisibleShardSize: 22,
+  soundVisibleShardTurbulence: 45,
+  soundVisibleShardWindDirection: 0,
   textPosition: 'bottom',
   useGradient: true,
+  visualizerMode: 'classic',
   visualizerSubTab: 'layers',
   vizSpectrum: 'wide',
 }
@@ -39,6 +49,17 @@ export const videoTemplates = [
   createTemplate('datascape', 'Datascape', true, ['#030b18', '#0c2f54'], ['#45f3ff', '#6b7cff'], {
     backdropGradient1: '#030b18', backdropGradient2: '#0c2f54', barColor: '#45f3ff',
     barColor2: '#6b7cff', titleFont: 'Orbitron', vizShape: 'bars',
+  }),
+  createTemplate('soundvisible-gold', 'SoundVisible Gold', false, ['#130804', '#3a1606'], ['#f6c453', '#fff4b8'], {
+    artistText: 'ARTIST NAME', backdropGradient1: '#130804', backdropGradient2: '#3a1606',
+    backdropGradientAngle: 90, barColor: '#f6c453', barColor2: '#fff4b8',
+    glowEnabled: false, showProgressBar: true, soundVisibleColor: '#f6c453',
+    soundVisibleCoreColor: '#fff4b8', soundVisibleGlow: 64, soundVisibleLineWidth: 2,
+    soundVisibleShardAmount: 18, soundVisibleShardFadeDistance: 120,
+    soundVisibleShardTurbulence: 55, soundVisibleShardWindDirection: 0,
+    textPosition: 'bottom', titleSize: 30, titleText: 'MUSIC TRACK NAME',
+    visualizerMode: 'soundvisible', visualizerSubTab: 'shape',
+    visualizerWaveHeight: 34, visualizerWidth: 95,
   }),
   createTemplate('jungle-cat', 'Jungle Cat', false, ['#101205', '#353a0d'], ['#f2c94c', '#27ae60'], {
     backdropGradient1: '#101205', backdropGradient2: '#353a0d', barColor: '#f2c94c',
@@ -89,7 +110,11 @@ export const videoTemplates = [
 
 /** Return a template by stable id. */
 export function getTemplateById(id) {
-  return videoTemplates.find(template => template.id === id) || videoTemplates[4]
+  return videoTemplates.find(template => template.id === id) || getDefaultTemplate()
+}
+
+function getDefaultTemplate() {
+  return videoTemplates.find(template => template.id === 'default') || videoTemplates[0]
 }
 
 /** Apply a selected template to the Pinia store-like target. */

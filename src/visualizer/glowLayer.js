@@ -75,6 +75,7 @@ function resetContext(context, canvas) {
 }
 
 function getEffect(store) {
+  if (store.visualizerMode === 'soundvisible') return null
   if (!store.fireEnabled && !store.glowEnabled && !store.shadowEnabled) return null
   if (store.fireEnabled) return { color: getFireColor(store), blur: store.glowAmount + 12 }
   if (store.glowEnabled) return { color: store.glowColor, blur: store.glowAmount + store.glowScale * 0.4 }

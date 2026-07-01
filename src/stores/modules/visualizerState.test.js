@@ -2,6 +2,20 @@ import { describe, expect, it } from 'vitest'
 import { createVisualizerState, MAX_VISUALIZER_LAYERS } from './visualizerState.js'
 
 describe('visualizer layer state', () => {
+  it('starts in classic mode with SoundVisible controls available', () => {
+    const state = createVisualizerState()
+
+    expect(state.visualizerMode.value).toBe('classic')
+    expect(state.soundVisibleColor.value).toBe('#f6c453')
+    expect(state.soundVisibleCoreColor.value).toBe('#fff4b8')
+    expect(state.soundVisibleGlow.value).toBe(70)
+    expect(state.soundVisibleLineWidth.value).toBe(2)
+    expect(state.soundVisibleShardAmount.value).toBe(18)
+    expect(state.soundVisibleShardFadeDistance.value).toBe(100)
+    expect(state.soundVisibleShardTurbulence.value).toBe(45)
+    expect(state.soundVisibleShardWindDirection.value).toBe(0)
+  })
+
   it('adds unique layers up to the Specterr layer limit', () => {
     const state = createVisualizerState()
 

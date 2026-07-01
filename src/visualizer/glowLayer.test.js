@@ -30,6 +30,21 @@ describe('glow layer renderer', () => {
     expect(layers[0]).toMatchObject({ width: 960, height: 540 })
     expect(layers[0].context.scale).toHaveBeenCalledWith(0.5, 0.5)
   })
+
+  it('skips the generic glow pass for SoundVisible mode', () => {
+    const renderer = createGlowLayerRenderer(createCanvas([]))
+
+    renderer.draw(
+      { ...createStore(), visualizerMode: 'soundvisible' },
+      { drawImage: vi.fn() },
+      createFrameData(),
+      createSize(),
+      createMotion(),
+      100,
+    )
+
+    expect(drawVisualizerShape).not.toHaveBeenCalled()
+  })
 })
 
 function createCanvas(layers) {

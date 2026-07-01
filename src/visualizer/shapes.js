@@ -1,17 +1,26 @@
 import { drawLayeredVisualizer } from './layeredShapes.js'
+import { drawSoundVisibleVisualizer } from './soundVisibleVisualizer.js'
 
 /** Draw the active visualizer shape. */
-export function drawVisualizerShape(store, ctx, data, size, driftOffset, rumbleScale = 1) {
+export function drawVisualizerShape(store, ctx, data, size, driftOffset, rumbleScale = 1, animationTime = 0, deltaTime = 0, visualizerState = null) {
   const shapeData = getShapeData(store, data)
   ctx.save()
   applyVisualizerTransform(store, ctx, size, rumbleScale)
+  drawActiveVisualizer(store, ctx, shapeData, size, driftOffset, animationTime, deltaTime, visualizerState)
+  ctx.restore()
+}
+
+function drawActiveVisualizer(store, ctx, shapeData, size, driftOffset, animationTime, deltaTime, visualizerState) {
+  if (store.visualizerMode === 'soundvisible') {
+    drawSoundVisibleVisualizer(store, ctx, shapeData.frequency, size, animationTime, deltaTime, visualizerState)
+    return
+  }
   if (store.vizShape === 'bars' || store.vizShape === 'circular') {
     drawLayeredVisualizer(store, ctx, shapeData.frequency, size, driftOffset)
   }
   if (store.vizShape === 'mirror') drawLegacyMirror(store, ctx, shapeData.frequency, size)
   if (store.vizShape === 'wave') drawWave(store, ctx, shapeData.time, size)
   if (store.vizShape === 'filled') drawFilled(store, ctx, shapeData.frequency, size)
-  ctx.restore()
 }
 
 function getShapeData(store, data) {
