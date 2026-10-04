@@ -21,6 +21,21 @@ describe('glow layer renderer', () => {
     expect(targetContext.drawImage).toHaveBeenCalledTimes(2)
   })
 
+  it('composites inner glow above the main shape and clears it when disabled', () => {
+    const layers = [], renderer = createGlowLayerRenderer(createCanvas(layers))
+    const target = { drawImage: vi.fn() }
+    const store = { ...createStore(), glowType: 'inner' }
+    renderer.draw(store, target, createFrameData(), createSize(), createMotion(), 100)
+    expect(layers[1].context.globalCompositeOperation).toBe('destination-in')
+    renderer.drawInner(target, createSize())
+    expect(target.drawImage).toHaveBeenLastCalledWith(layers[3], 0, 0, 1920, 1080)
+    store.glowEnabled = false
+    target.drawImage.mockClear()
+    renderer.draw(store, target, createFrameData(), createSize(), createMotion(), 200)
+    renderer.drawInner(target, createSize())
+    expect(target.drawImage).not.toHaveBeenCalled()
+  })
+
   it('renders large canvases through a reduced-resolution layer', () => {
     const layers = []
     const renderer = createGlowLayerRenderer(createCanvas(layers))

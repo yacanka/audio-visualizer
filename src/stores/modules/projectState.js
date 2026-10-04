@@ -15,6 +15,7 @@ export function createProjectState(audio) {
     previewBackgroundMode: ref('animate'),
     previewAudioAnalysisEnabled: ref(true),
     exportStatus: ref(''),
+    isExporting: ref(false), exportProgress: ref(0),
     startTime,
     endTime,
     isVideoPublic: ref(false),

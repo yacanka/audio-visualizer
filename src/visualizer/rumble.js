@@ -9,19 +9,25 @@ const DEFAULT_FRAME_TIME = 1000 / 60
 const MAX_FRAME_TIME = 100
 
 /** Return smooth audio-reactive scale and envelope state for one frame. */
-export function getVisualizerRumbleMotion(store, audioMotion, previousEnvelope = 0, deltaTime = 0) {
-  if (!isRumbleEnabled(store)) return { scale: 1, envelope: 0 }
+export function getVisualizerRumbleMotion(store, audioMotion, previousEnvelope = 0, deltaTime = 0, time = 0) {
+  if (!isRumbleEnabled(store)) return { scale: 1, envelope: 0, x: 0, y: 0 }
 
   const target = getTargetEnvelope(audioMotion)
   const envelope = smoothEnvelope(previousEnvelope, target, deltaTime)
   const intensity = getNormalizedControl(store.visualizerRumble, LEGACY_INTENSITIES)
   const bounce = getNormalizedControl(store.visualizerBounce)
-  return { scale: 1 + MAX_BOUNCE_SCALE * intensity * bounce * envelope, envelope }
+  const shake = intensity * envelope * 0.012
+  return {
+    scale: 1 + MAX_BOUNCE_SCALE * bounce * envelope,
+    envelope,
+    x: Math.sin(time * 73) * shake,
+    y: Math.sin(time * 91 + 0.8) * shake,
+  }
 }
 
 function isRumbleEnabled(store) {
-  return getNormalizedControl(store.visualizerRumble, LEGACY_INTENSITIES) > 0
-    && getNormalizedControl(store.visualizerBounce) > 0
+  return (getNormalizedControl(store.visualizerRumble, LEGACY_INTENSITIES) > 0
+    || getNormalizedControl(store.visualizerBounce) > 0)
     && store.isPlaying
     && store.previewAudioAnalysisEnabled
 }

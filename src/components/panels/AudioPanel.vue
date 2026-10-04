@@ -24,13 +24,21 @@
 
     <section class="section">
       <div class="row">
-        <label class="item-label">Normalleştir</label>
+        <label class="item-label" for="normalize-audio">Normalleştir</label>
         <label class="toggle">
-          <input type="checkbox" v-model="store.normalize" />
+          <input id="normalize-audio" type="checkbox" v-model="store.normalize" />
           <span class="track" />
         </label>
       </div>
-      <p class="hint">Frekans yoğunluğunu otomatik dengeler</p>
+      <p class="hint">Parçanın tepe düzeyine göre görsel yoğunluğu dengeler. Ses düzeyini değiştirmez.</p>
+      <div class="row mt-8">
+        <label class="item-label" for="bass-boost">Bas Güçlendirme</label>
+        <label class="toggle">
+          <input id="bass-boost" type="checkbox" v-model="store.bassBoost" />
+          <span class="track" />
+        </label>
+      </div>
+      <p class="hint">Düşük frekansların görsel tepkisini artırır.</p>
     </section>
 
     <section v-if="!store.audioFile" class="empty-state">

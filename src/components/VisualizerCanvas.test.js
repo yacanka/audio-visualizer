@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { reactive, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import VisualizerCanvas from './VisualizerCanvas.vue'
@@ -28,6 +28,19 @@ describe('VisualizerCanvas', () => {
     vi.clearAllMocks()
     vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1))
     vi.stubGlobal('cancelAnimationFrame', vi.fn())
+  })
+
+  it('keeps a continuous silent clock for video backgrounds beyond twelve seconds', async () => {
+    store.isPlaying = true
+    store.currentTime = 11.95
+    store.backdropType = 'video'
+    const wrapper = mount(VisualizerCanvas)
+    await flushPromises()
+    const frame = requestAnimationFrame.mock.calls.at(-1)[0]
+    frame(1000)
+    frame(1100)
+    expect(store.currentTime).toBeCloseTo(12.05)
+    wrapper.unmount()
   })
 
   it('accepts audio drops after an audio file is already loaded', async () => {

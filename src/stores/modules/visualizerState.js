@@ -47,7 +47,9 @@ function createShapeState() {
     barCount: ref(80), barGap: ref(2), barRounding: ref(4),
     visualizerBarWidth: ref(75), visualizerPointRadius: ref(5), sensitivity: ref(1),
     vizSmooth: ref(true), vizInvert: ref(false), visualizerDiameter: ref(40),
+    visualizerMovement: ref('outward'), visualizerHollowCenter: ref(true),
     visualizerImageSize: ref(95), visualizerWidth: ref(90), visualizerBaseHeight: ref(0),
+    visualizerImageSrc: ref(''), visualizerImageVisible: ref(true), visualizerImageIsPreset: ref(false),
     visualizerXPosition: ref(0), visualizerYPosition: ref(0), visualizerWaveHeight: ref(30),
     visualizerSeparation: ref(40), visualizerRotation: ref(0), centerCutout: ref(0),
     soundVisibleColor: ref('#f6c453'), soundVisibleCoreColor: ref('#fff4b8'),
@@ -63,6 +65,7 @@ function createEffectState() {
     useGradient: ref(true), gradientDir: ref('vertical'), smoothing: ref(0.82),
     glowEnabled: ref(true), glowAmount: ref(15), glowColor: ref('#f85462'),
     glowType: ref('outer'), glowScale: ref(10), fireEnabled: ref(false), shadowEnabled: ref(false),
+    fireIntensity: ref(50), fireDetail: ref(2), shadowBlur: ref(12), shadowOpacity: ref(60),
     webglDisplacementEnabled: ref(true), webglDisplacementIntensity: ref(10),
   }
 }
@@ -71,6 +74,9 @@ function createMotionState() {
   return {
     waveDelay: ref(false), drift: ref(true), driftIntensity: ref(50), driftCustom: ref(false),
     visualizerRumble: ref(0), visualizerBounce: ref(20), visualizerSpin: ref(false),
+    visualizerSpinSpeed: ref(24), visualizerSpinAcceleration: ref(0), visualizerLogoLocked: ref(false),
+    driftX: ref(5), driftY: ref(5), driftSpeed: ref(1.5), driftRotation: ref(0.5),
+    driftScale: ref(0), driftAcceleration: ref(0),
   }
 }
 
@@ -141,12 +147,13 @@ function createLayer(number, fillColor) {
   return {
     id: `layer-${number}`, name: `Wave Layer ${number}`, fillColor,
     outlineColor: '#000000', outlineWidth: 0, visible: true,
+    opacity: 1, customEnabled: false, settings: {},
   }
 }
 
 function duplicateLayer(source, layers) {
   const number = getNextLayerNumber(layers)
-  return { ...source, id: `layer-${number}`, name: `Wave Layer ${number}` }
+  return { ...source, settings: { ...source.settings }, id: `layer-${number}`, name: `Wave Layer ${number}` }
 }
 
 function getNextLayerNumber(layers) {
@@ -166,13 +173,41 @@ function syncLayerColor(layers, index, color) {
 
 function getSafeLayerProperties(properties = {}) {
   const safeProperties = {}
+  if (['rgb', 'lch'].includes(properties.colorMix)) safeProperties.colorMix = properties.colorMix
   if (isHexColor(properties.fillColor)) safeProperties.fillColor = properties.fillColor
   if (isHexColor(properties.outlineColor)) safeProperties.outlineColor = properties.outlineColor
   if (Object.hasOwn(properties, 'visible')) safeProperties.visible = Boolean(properties.visible)
+  if (Object.hasOwn(properties, 'opacity')) safeProperties.opacity = Math.min(1, Math.max(0, Number(properties.opacity) || 0))
+  for (const key of ['fillOpacity', 'outlineOpacity', 'secondaryFillOpacity', 'secondaryOutlineOpacity']) {
+    if (Object.hasOwn(properties, key)) safeProperties[key] = Math.min(1, Math.max(0, Number(properties[key]) || 0))
+  }
+  for (const key of ['secondaryFillColor', 'secondaryOutlineColor']) {
+    if (properties[key] === null || isHexColor(properties[key])) safeProperties[key] = properties[key]
+  }
+  if (Object.hasOwn(properties, 'customEnabled')) safeProperties.customEnabled = Boolean(properties.customEnabled)
+  if (properties.settings && typeof properties.settings === 'object') {
+    safeProperties.settings = sanitizeLayerSettings(properties.settings)
+  }
   if (Object.hasOwn(properties, 'outlineWidth')) {
     safeProperties.outlineWidth = Math.min(20, Math.max(0, Number(properties.outlineWidth) || 0))
   }
   return safeProperties
+}
+
+function sanitizeLayerSettings(settings) {
+  const result = {}
+  const enums = { vizStyle: ['solid', 'bar', 'point'], vizSpectrum: ['bass', 'wide'], visualizerMovement: ['outward', 'inward'],
+    vizReflection: ['none', 'vertical', 'across', '3-way', '4-way', 'one-side', 'two-side', 'combo'] }
+  Object.entries(enums).forEach(([key, allowed]) => { if (allowed.includes(settings[key])) result[key] = settings[key] })
+  const ranges = { barCount: [4, 200], visualizerWaveHeight: [0, 100], visualizerBarWidth: [1, 100], visualizerPointRadius: [1, 20], visualizerRotation: [-360, 360], visualizerSpinSpeed: [-180, 180], visualizerSpinAcceleration: [-180, 180] }
+  Object.entries(ranges).forEach(([key, [min, max]]) => {
+    if (Number.isFinite(settings[key])) result[key] = Math.min(max, Math.max(min, settings[key]))
+  })
+  if (typeof settings.vizSmooth === 'boolean') result.vizSmooth = settings.vizSmooth
+  if (typeof settings.vizInvert === 'boolean') result.vizInvert = settings.vizInvert
+  if (typeof settings.visualizerHollowCenter === 'boolean') result.visualizerHollowCenter = settings.visualizerHollowCenter
+  if (typeof settings.visualizerSpin === 'boolean') result.visualizerSpin = settings.visualizerSpin
+  return result
 }
 
 function isHexColor(value) {

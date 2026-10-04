@@ -57,6 +57,16 @@ function normalizeLayer(layer, index, store) {
     outlineColor: layer.outlineColor || '#000000',
     outlineWidth: clamp(Number(layer.outlineWidth) || 0, 0, 20),
     visible: layer.visible !== false,
+    opacity: clamp(Number(layer.opacity ?? 1), 0, 1),
+    fillOpacity: clamp(Number(layer.fillOpacity ?? 1), 0, 1),
+    outlineOpacity: clamp(Number(layer.outlineOpacity ?? 1), 0, 1),
+    secondaryFillColor: layer.secondaryFillColor || null,
+    secondaryOutlineColor: layer.secondaryOutlineColor || null,
+    secondaryFillOpacity: clamp(Number(layer.secondaryFillOpacity ?? 1), 0, 1),
+    secondaryOutlineOpacity: clamp(Number(layer.secondaryOutlineOpacity ?? 1), 0, 1),
+    colorMix: layer.colorMix === 'lch' ? 'lch' : 'rgb',
+    customEnabled: Boolean(layer.customEnabled),
+    settings: layer.settings || {},
   }
 }
 

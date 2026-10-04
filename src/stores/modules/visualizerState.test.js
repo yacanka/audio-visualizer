@@ -2,6 +2,19 @@ import { describe, expect, it } from 'vitest'
 import { createVisualizerState, MAX_VISUALIZER_LAYERS } from './visualizerState.js'
 
 describe('visualizer layer state', () => {
+  it('retains bounded custom motion and center settings when duplicating a layer', () => {
+    const state = createVisualizerState()
+    state.updateVisualizerLayer('layer-1', { customEnabled: true, settings: {
+      visualizerMovement: 'inward', visualizerHollowCenter: false,
+      visualizerSpin: true, visualizerSpinSpeed: -999, visualizerSpinAcceleration: 25,
+    } })
+    state.duplicateVisualizerLayer('layer-1')
+    expect(state.visualizerLayers.value[1].settings).toEqual({
+      visualizerMovement: 'inward', visualizerHollowCenter: false,
+      visualizerSpin: true, visualizerSpinSpeed: -180, visualizerSpinAcceleration: 25,
+    })
+    expect(state.visualizerLayers.value[1].settings).not.toBe(state.visualizerLayers.value[0].settings)
+  })
   it('starts in classic mode with SoundVisible controls available', () => {
     const state = createVisualizerState()
 

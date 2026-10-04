@@ -3,7 +3,7 @@ import { onMounted, onUnmounted } from 'vue'
 /** Register editor keyboard shortcuts while the app is mounted. */
 export function useKeyboardShortcuts(store, controls) {
   function onKeydown(event) {
-    if (isTextInput(event.target)) return
+    if (store.isExporting || isTextInput(event.target) || event.target.closest?.('[role=dialog]')) return
     if (event.code === 'Space') {
       event.preventDefault()
       controls.togglePlay()

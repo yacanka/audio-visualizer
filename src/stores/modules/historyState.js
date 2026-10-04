@@ -58,7 +58,15 @@ export function createHistoryState(trackedRefs, resetTransientState) {
     historyIndex.value = 0
   }
 
-  return { canUndo, canRedo, isRestoringHistory, projectFingerprint, initializeHistory, commitHistory, undo, redo, resetProject, createSnapshot }
+  /** Restore validated project settings as a new history root. */
+  function restoreProject(snapshot) {
+    applySnapshot({ ...defaultSnapshot, ...snapshot })
+    resetTransientState()
+    history.value = [createSnapshot()]
+    historyIndex.value = 0
+  }
+
+  return { canUndo, canRedo, isRestoringHistory, projectFingerprint, initializeHistory, commitHistory, undo, redo, resetProject, restoreProject, createSnapshot }
 }
 
 function cloneValue(value) {

@@ -9,9 +9,24 @@
         <button :class="['chip', { active: store.textPosition === 'top' }]" @click="store.textPosition = 'top'">Üst</button>
         <button :class="['chip', { active: store.textPosition === 'center' }]" @click="store.textPosition = 'center'">Orta</button>
         <button :class="['chip', { active: store.textPosition === 'bottom' }]" @click="store.textPosition = 'bottom'">Alt</button>
+        <button :class="['chip', { active: store.textPosition === 'custom' }]" @click="store.textPosition = 'custom'">Özel</button>
       </div>
     </section>
 
+    <section v-if="store.textPosition === 'custom'" class="section">
+      <PanelRange label="Title X" v-model="store.titleX" :min="0" :max="100" />
+      <PanelRange label="Title Y" v-model="store.titleY" :min="0" :max="100" />
+      <div class="row mt-8">
+        <label class="item-label" for="title-align">Başlık Hizalama</label>
+        <select id="title-align" v-model="store.titleAlign"><option value="left">Sol</option><option value="center">Orta</option><option value="right">Sağ</option></select>
+      </div>
+      <PanelRange label="Artist X" v-model="store.artistX" :min="0" :max="100" />
+      <PanelRange label="Artist Y" v-model="store.artistY" :min="0" :max="100" />
+      <div class="row mt-8">
+        <label class="item-label" for="artist-align">Sanatçı Hizalama</label>
+        <select id="artist-align" v-model="store.artistAlign"><option value="left">Sol</option><option value="center">Orta</option><option value="right">Sağ</option></select>
+      </div>
+    </section>
     <!-- Title -->
     <section class="section">
       <div class="row">
@@ -86,6 +101,10 @@
           <label class="item-label">Renk</label>
           <input type="color" :value="artistColorHex" @input="store.artistColor = $event.target.value" />
         </div>
+        <div class="row mt-8">
+          <label class="item-label" for="artist-weight">Kalınlık</label>
+          <select id="artist-weight" v-model="store.artistWeight"><option value="400">Normal</option><option value="700">Kalın</option></select>
+        </div>
 
         <div class="row mt-8">
           <label class="item-label">Boyut</label>
@@ -107,6 +126,7 @@
 </template>
 
 <script setup>
+import PanelRange from './PanelRange.vue'
 import { computed } from 'vue'
 import { useAppStore } from '../../stores/app.js'
 

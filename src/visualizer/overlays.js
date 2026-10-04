@@ -1,3 +1,4 @@
+import { getElementTiming } from './elementTiming.js'
 import { findCurrentLyric } from '../utils/lyrics.js'
 import { drawParticleLayer } from './particles.js'
 
@@ -32,12 +33,13 @@ export function drawParticleElements(store, ctx, size, timestamp = 0, frequencyD
 export function drawElements(store, ctx, size, timestamp = 0, frequencyData = null) {
   store.elements
     .filter(element => element.type !== 'particles')
-    .forEach(element => drawElement(ctx, element, size))
+    .forEach(element => drawElement(ctx, element, size, store.currentTime || 0))
 }
 
 function getTextLayout(store, size) {
   const hasTitle = store.showTitle && store.titleText.trim()
   const hasArtist = store.showArtist && store.artistText.trim()
+  if (store.textPosition === 'custom') return { y: size.h * store.titleY / 100, artistY: size.h * store.artistY / 100, hasTitle, hasArtist }
   if (store.textPosition === 'top') return { y: 48, hasTitle, hasArtist }
   if (store.textPosition === 'center') return { y: size.h / 2 - (hasTitle && hasArtist ? 26 : 14), hasTitle, hasArtist }
   return { y: size.h - (hasArtist ? 70 : 50), hasTitle, hasArtist }
@@ -45,20 +47,22 @@ function getTextLayout(store, size) {
 
 function drawTitle(store, ctx, layout, driftOffset) {
   if (!layout.hasTitle) return
-  ctx.font = `${store.titleWeight} ${store.titleSize}px '${store.titleFont}', sans-serif`
+  ctx.font = `${store.titleWeight} ${store.titleSize * Math.min(ctx.canvas.width, ctx.canvas.height) / 720}px '${store.titleFont}', sans-serif`
   ctx.fillStyle = store.titleColor
-  drawShadowedText(ctx, store.titleText, 0.6, 8, driftOffset * 0.1, layout.y)
+  const x = store.textPosition === 'custom' ? (store.titleX - 50) / 100 * ctx.canvas.width : driftOffset * 0.1
+  drawShadowedText(ctx, store.titleText, 0.6, 8, x, layout.y, store.titleAlign)
 }
 
 function drawArtist(store, ctx, layout, driftOffset) {
   if (!layout.hasArtist) return
-  ctx.font = `400 ${store.artistSize}px '${store.artistFont}', sans-serif`
+  ctx.font = `${store.artistWeight || '400'} ${store.artistSize * Math.min(ctx.canvas.width, ctx.canvas.height) / 720}px '${store.artistFont}', sans-serif`
   ctx.fillStyle = store.artistColor
-  drawShadowedText(ctx, store.artistText, 0.5, 6, driftOffset * 0.08, layout.y + store.titleSize + 8)
+  const x = store.textPosition === 'custom' ? (store.artistX - 50) / 100 * ctx.canvas.width : driftOffset * 0.08
+  drawShadowedText(ctx, store.artistText, 0.5, 6, x, layout.artistY ?? layout.y + store.titleSize + 8, store.artistAlign)
 }
 
-function drawShadowedText(ctx, text, alpha, blur, xOffset, y) {
-  ctx.textAlign = 'center'
+function drawShadowedText(ctx, text, alpha, blur, xOffset, y, align = 'center') {
+  ctx.textAlign = align
   ctx.textBaseline = 'alphabetic'
   ctx.shadowColor = `rgba(0,0,0,${alpha})`
   ctx.shadowBlur = blur
@@ -81,10 +85,18 @@ function drawLyrics(store, ctx, size) {
   ctx.shadowBlur = 0
 }
 
-function drawElement(ctx, element, size) {
+function drawElement(ctx, element, size, time) {
+  const timing = getElementTiming(element, time)
+  if (!timing.visible) return
+  ctx.save()
+  ctx.globalAlpha = timing.opacity * (element.opacity ?? 1)
   const point = getElementPoint(element, size)
+  ctx.translate(point.x, point.y)
+  ctx.scale(timing.scale, timing.scale)
+  ctx.translate(-point.x, -point.y)
   if (element.type === 'text') drawTextElement(ctx, element, point.x, point.y)
   if (element.type === 'image') drawImageElement(ctx, element, point.x, point.y, size)
+  ctx.restore()
 }
 
 function getElementPoint(element, size) {
@@ -106,9 +118,7 @@ function drawImageElement(ctx, element, x, y, size) {
   const image = getCachedImage(element.src)
   if (!image?.complete) return
   const imageSize = Math.max(24, (element.size / 100) * Math.min(size.w, size.h))
-  ctx.globalAlpha = element.opacity ?? 1
   ctx.drawImage(image, x - imageSize / 2, y - imageSize / 2, imageSize, imageSize)
-  ctx.globalAlpha = 1
 }
 
 function getCachedImage(src) {

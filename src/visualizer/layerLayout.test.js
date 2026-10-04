@@ -59,6 +59,9 @@ describe('visualizer layer layouts', () => {
 
     expect(getRenderableLayers(store)).toEqual([{
       id: 'layer-1', fillColor: '#111111', outlineColor: '#000000', outlineWidth: 0, visible: true,
+      opacity: 1, colorMix: 'rgb', customEnabled: false, settings: {},
+      fillOpacity: 1, outlineOpacity: 1, secondaryFillColor: null, secondaryOutlineColor: null,
+      secondaryFillOpacity: 1, secondaryOutlineOpacity: 1,
     }])
   })
 })

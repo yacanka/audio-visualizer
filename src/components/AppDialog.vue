@@ -1,6 +1,6 @@
 <template>
   <div class="dialog-backdrop" @click.self="$emit('close')">
-    <section class="dialog">
+    <section class="dialog" role="dialog" aria-modal="true" :aria-label="title">
       <header class="dialog-header">
         <h2>{{ title }}</h2>
         <button class="close-btn" @click="$emit('close')" aria-label="Close">×</button>

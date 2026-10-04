@@ -1,3 +1,10 @@
+import specterrPresets from './specterrPresets.json'
+import { reactive, effectScope } from 'vue'
+import { createVisualizerState } from '../stores/modules/visualizerState.js'
+import { createBackdropState } from '../stores/modules/backdropState.js'
+import { createElementsState } from '../stores/modules/elementsState.js'
+import { createTextState } from '../stores/modules/textState.js'
+
 export const templateSteps = [
   { id: 'preset', label: 'Preset' },
   { id: 'audio', label: 'Audio' },
@@ -36,7 +43,7 @@ const baseSettings = {
   vizSpectrum: 'wide',
 }
 
-export const videoTemplates = [
+const localTemplates = [
   createTemplate('forest-lights', 'Forest of Lights', true, ['#05140f', '#123a24'], ['#9cff9c', '#fff6a8'], {
     backdropGradient1: '#06130d', backdropGradient2: '#173b2a', barColor: '#9cff9c',
     barColor2: '#fff6a8', glowColor: '#7cff97', titleText: 'Forest of Lights',
@@ -108,6 +115,36 @@ export const videoTemplates = [
   }),
 ]
 
+// Stable local ids remain valid. Observed presets supersede earlier approximations.
+export const videoTemplates = [
+  ...specterrPresets,
+  ...localTemplates.filter(local => !specterrPresets.some(preset => preset.id === local.id))
+    .map(template => ({ ...template, pro: false, source: 'local' })),
+]
+
+/** Fresh design state prevents presets from inheriting effects from the last selection. */
+function getDesignDefaults() {
+  const scope = effectScope()
+  const defaults = scope.run(() => reactive({ ...createVisualizerState(), ...createBackdropState(), ...createElementsState(), ...createTextState() }))
+  const transient = new Set(['backdropVideoFile', 'backdropVideo', 'backdropVideoStatus', 'backdropVideoDuration'])
+  const settings = Object.fromEntries(Object.entries(defaults).filter(([key, value]) => typeof value !== 'function' && !transient.has(key)))
+  const result = JSON.parse(JSON.stringify(settings))
+  scope.stop()
+  return result
+}
+
+const designDefaults = getDesignDefaults()
+
+export function createTemplateSettings(template) {
+  // Reference presets use filled circular waves and no whole-frame displacement.
+  // Keep legacy defaults for local designs and already saved version-1 projects.
+  const referenceSettings = template.source === 'specterr'
+    ? { visualizerHollowCenter: false, webglDisplacementEnabled: false } : {}
+  const settings = JSON.parse(JSON.stringify({ ...designDefaults, ...baseSettings, ...referenceSettings, ...template.settings }))
+  if (template.source === 'specterr') settings.visualizerLayers.forEach(layer => { layer.colorMix = 'lch' })
+  return settings
+}
+
 /** Return a template by stable id. */
 export function getTemplateById(id) {
   return videoTemplates.find(template => template.id === id) || getDefaultTemplate()
@@ -121,7 +158,10 @@ function getDefaultTemplate() {
 export function applyTemplateToStore(store, template) {
   const selectedTemplate = typeof template === 'string' ? getTemplateById(template) : template
   if (!selectedTemplate) return false
-  applySettings(store, selectedTemplate.settings)
+  const retained = getRetainedContent(store)
+  applySettings(store, createTemplateSettings(selectedTemplate))
+  if (retained.elements) retained.elements = [...(store.elements || []), ...retained.elements]
+  Object.entries(retained).forEach(([key, value]) => { store[key] = value })
   store.selectedTemplateId = selectedTemplate.id
   return true
 }
@@ -142,10 +182,30 @@ function applySettings(store, settings) {
 
 function applySetting(store, key, value) {
   if (key === 'elements') return replaceElements(store, value)
-  if (key in store) store[key] = value
+  if (key in store) store[key] = value && typeof value === 'object' ? JSON.parse(JSON.stringify(value)) : value
 }
 
 function replaceElements(store, elements = []) {
   store.elements = elements.map((element, index) => ({ ...element, id: `template-${element.id}-${index}` }))
   store.selectedElementId = store.elements[0]?.id || null
+}
+
+function getRetainedContent(store) {
+  const retained = {}
+  if (store.backdropType === 'video' && store.backdropVideoFile) {
+    Object.assign(retained, { backdropType: 'video', backdropVideoName: store.backdropVideoName, backdropImageFit: store.backdropImageFit })
+  }
+  for (const key of ['titleText', 'artistText', 'lyricsText', 'lyricSegments', 'lyricsEnabled']) {
+    if (key in store && store[key] !== '' && store[key] != null) retained[key] = store[key]
+  }
+  if (store.backdropType !== 'video' && (store.backdropImageSrc || store.backdropImage) && !store.backdropImageIsPreset) {
+    Object.assign(retained, { backdropType: 'image', backdropImageSrc: store.backdropImageSrc,
+      backdropImageIsPreset: false, backdropImage: store.backdropImage, backdropImageFit: store.backdropImageFit })
+  }
+  if (store.visualizerImageSrc && !store.visualizerImageIsPreset) {
+    Object.assign(retained, { visualizerImageSrc: store.visualizerImageSrc, visualizerImageIsPreset: false })
+  }
+  const userElements = (store.elements || []).filter(element => !element.id.startsWith('template-'))
+  if (userElements.length) retained.elements = [...userElements]
+  return retained
 }

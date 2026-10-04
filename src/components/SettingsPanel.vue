@@ -1,7 +1,7 @@
 <template>
   <div class="settings-panel">
     <div class="panel-scroll">
-      <GeneralPanel v-if="store.activeTab === 'general'" @upload="$emit('upload')" @preset="$emit('preset')" />
+      <GeneralPanel v-if="store.activeTab === 'general'" @upload="$emit('upload')" @preset="$emit('preset')" @export="$emit('export')" />
       <VisualizerPanel v-else-if="store.activeTab === 'visualizer'" @smoothingChange="$emit('smoothingChange')" />
       <AudioPanel v-else-if="store.activeTab === 'audio'" @fftChange="$emit('fftChange')" @volumeChange="v => $emit('volumeChange', v)" />
       <BackdropPanel v-else-if="store.activeTab === 'backdrop'" />
@@ -23,12 +23,12 @@ import LyricsPanel from './panels/LyricsPanel.vue'
 import ElementsPanel from './panels/ElementsPanel.vue'
 
 const store = useAppStore()
-defineEmits(['smoothingChange', 'fftChange', 'volumeChange', 'upload', 'preset'])
+defineEmits(['smoothingChange', 'fftChange', 'volumeChange', 'upload', 'preset', 'export'])
 </script>
 
 <style scoped>
 .settings-panel {
-  width: 220px;
+  width: clamp(260px, 30vw, 354px);
   flex-shrink: 0;
   background: var(--bg-panel);
   border-right: 1px solid var(--border);

@@ -2,7 +2,7 @@
   <div class="playback-bar">
     <!-- Controls left -->
     <div class="controls-left">
-      <button class="ctrl-btn play-btn" @click="$emit('togglePlay')" :disabled="!store.audioFile" :title="store.isPlaying ? 'Durdur' : 'Oynat'">
+      <button class="ctrl-btn play-btn" @click="$emit('togglePlay')" :title="store.isPlaying ? 'Durdur' : 'Oynat'">
         <svg v-if="!store.isPlaying" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82"/>
         </svg>
@@ -20,7 +20,7 @@
         </svg>
       </button>
 
-      <span class="time-display">{{ formatTime(store.currentTime) }} / {{ formatTime(store.duration) }}</span>
+      <span class="time-display">{{ formatTime(timelineTime) }} / {{ formatTime(timelineDuration) }}</span>
     </div>
 
     <!-- Waveform scrubber -->
@@ -57,6 +57,7 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import { useAppStore } from '../stores/app.js'
 import PreviewSettingsMenu from './PreviewSettingsMenu.vue'
+import { getTimelineDuration, getTimelineTime } from '../utils/timeline.js'
 
 const store = useAppStore()
 const emit = defineEmits(['togglePlay', 'toggleMute', 'seek', 'volumeChange', 'help'])
@@ -65,11 +66,13 @@ const waveformWrap = ref(null)
 const waveformCanvas = ref(null)
 const hoverX = ref(null)
 const settingsOpen = ref(false)
+const timelineDuration = computed(() => getTimelineDuration(store))
+const timelineTime = computed(() => getTimelineTime(store))
 
 const playheadX = computed(() => {
-  if (!store.duration || !waveformWrap.value) return 0
+  if (!waveformWrap.value) return 0
   const w = waveformWrap.value.clientWidth
-  return (store.currentTime / store.duration) * w
+  return (timelineTime.value / timelineDuration.value) * w
 })
 
 function formatTime(s) {
@@ -80,10 +83,10 @@ function formatTime(s) {
 }
 
 function onScrub(e) {
-  if (!store.duration || !waveformWrap.value) return
+  if (!waveformWrap.value) return
   const rect = waveformWrap.value.getBoundingClientRect()
   const ratio = (e.clientX - rect.left) / rect.width
-  emit('seek', ratio * store.duration)
+  emit('seek', Math.max(0, Math.min(1, ratio)) * timelineDuration.value)
 }
 
 function onHover(e) {

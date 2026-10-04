@@ -5,7 +5,9 @@
         <span>{{ store.fileName || 'New Video' }}</span>
         <small>{{ store.isVideoPublic ? 'Public' : 'Private' }}</small>
       </button>
+      <p v-if="store.exportStatus" role="status">{{ store.exportStatus }}</p>
       <div class="actions">
+        <button @click="$emit('open')">Open Project</button>
         <button @click="$emit('new')">Create New Video</button>
         <button @click="$emit('save')">Save Video</button>
         <button @click="$emit('export')">Export Video</button>
@@ -19,7 +21,7 @@ import { useAppStore } from '../stores/app.js'
 import AppDialog from './AppDialog.vue'
 
 const store = useAppStore()
-defineEmits(['close', 'new', 'save', 'export'])
+defineEmits(['close', 'new', 'save', 'export', 'open'])
 </script>
 
 <style scoped>
@@ -32,6 +34,7 @@ defineEmits(['close', 'new', 'save', 'export'])
   border-radius: var(--radius);
   color: var(--text-primary);
 }
+p { color: var(--text-secondary); font-size: 12px; }
 small { color: var(--text-muted); }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .actions button {

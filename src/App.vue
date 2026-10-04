@@ -1,6 +1,7 @@
 <template>
   <div class="app">
     <TopBar
+      :inert="store.isExporting"
       @videos="videosOpen = true"
       @undo="store.undo"
       @redo="store.redo"
@@ -9,7 +10,7 @@
       @export="exportOpen = true"
     />
 
-    <div class="app-body">
+    <div class="app-body" :inert="store.isExporting">
       <SideTabs />
       <SettingsPanel
         @smoothingChange="updateAnalyser"
@@ -17,6 +18,7 @@
         @volumeChange="setVolume"
         @upload="triggerUpload"
         @preset="templateOpen = true"
+        @export="exportOpen = true"
       />
       <VisualizerCanvas
         ref="vizCanvas"
@@ -26,6 +28,7 @@
     </div>
 
     <PlaybackBar
+      :inert="store.isExporting"
       :waveformData="waveformData"
       @togglePlay="togglePlay"
       @toggleMute="toggleMute"
@@ -34,8 +37,9 @@
       @help="helpOpen = true"
     />
 
+    <input ref="projectInput" type="file" accept="application/json,.json" hidden @change="loadProject" />
     <input ref="fileInput" type="file" accept="audio/*" style="display:none" @change="loadSelectedFile" />
-    <ExportDialog v-if="exportOpen" @close="exportOpen = false" @start="exportVideo" />
+    <ExportDialog v-if="exportOpen" @close="exportOpen = false" @start="exportVideo" @cancel="cancelExport" />
     <HelpDialog v-if="helpOpen" @close="helpOpen = false" />
     <TemplateGalleryDialog
       v-if="templateOpen"
@@ -48,6 +52,7 @@
       @close="videosOpen = false"
       @new="handleNewVideo"
       @save="saveProject"
+      @open="projectInput?.click()"
       @export="openExportFromVideos"
     />
   </div>
@@ -74,6 +79,7 @@ import { applyTemplateToStore } from './templates/videoTemplates.js'
 
 const store = useAppStore()
 const fileInput = ref(null)
+const projectInput = ref(null)
 const vizCanvas = ref(null)
 const exportOpen = ref(false)
 const helpOpen = ref(false)
@@ -93,11 +99,18 @@ const {
   dispose,
 } = useAudioController(getAudio)
 
-const { saveProject, newVideo } = useProjectActions(store, getAudio, clearWaveform)
-const { exportVideo } = useVideoExport(store, getAudio, getCanvas)
+const { saveProject, newVideo, openProject } = useProjectActions(store, getAudio, clearWaveform)
+const { exportVideo, cancelExport } = useVideoExport(store, getAudio, getCanvas)
 
+applyTemplateToStore(store, 'default')
 useProjectHistory(store)
 useKeyboardShortcuts(store, { togglePlay, toggleMute })
+
+async function loadProject(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (await openProject(file)) templateOpen.value = false
+}
 
 function getAudio() {
   return vizCanvas.value?.audio
@@ -129,6 +142,7 @@ function triggerUpload() {
 }
 
 onUnmounted(() => {
+  cancelExport()
   dispose()
 })
 </script>

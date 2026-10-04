@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 
 /** Create background image, color, and reactive motion state refs. */
 export function createBackdropState() {
@@ -10,6 +10,13 @@ export function createBackdropState() {
     backdropGradient2: ref('#1a0d2e'),
     backdropGradientAngle: ref(135),
     backdropImage: ref(null),
+    backdropVideoFile: shallowRef(null),
+    backdropVideo: shallowRef(null),
+    backdropVideoName: ref(''),
+    backdropVideoStatus: ref(''),
+    backdropVideoDuration: ref(0),
+    backdropImageSrc: ref(''),
+    backdropImageIsPreset: ref(false),
     backdropImageFit: ref('cover'),
     backdropReactive: ref(false),
     backdropReactiveIntensity: ref(20),
@@ -19,6 +26,8 @@ export function createBackdropState() {
     backdropDrift: ref(false),
     backdropDriftIntensity: ref(0),
     backdropDriftCustom: ref(false),
+    backdropDriftX: ref(5), backdropDriftY: ref(5), backdropDriftSpeed: ref(1.5),
+    backdropDriftRotation: ref(0.5), backdropDriftScale: ref(0), backdropDriftAcceleration: ref(0),
     backdropRumble: ref('none'),
     backdropHue: ref(0),
     backdropSaturation: ref(50),

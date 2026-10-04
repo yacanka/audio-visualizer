@@ -37,6 +37,18 @@ vi.mock('./pixiRenderer.js', () => ({
 describe('visualizer renderer', () => {
   beforeEach(() => vi.clearAllMocks())
 
+  it('restarts motion when exporting after a preview, even at the same playhead position', () => {
+    const store = { ...createStore(), isPlaying: true, currentTime: 0, visualizerSpin: true, visualizerSpinSpeed: 20 }
+    const renderer = createVisualizerRenderer(store), canvas = createCanvas()
+    renderer.drawFrame(canvas, createFrequency, createFrequency, 100)
+    renderer.drawFrame(canvas, createFrequency, createFrequency, 200)
+    expect(drawVisualizerShape.mock.calls.at(-1)[2].motion.spin).toBe(2)
+    store.isExporting = true
+    renderer.drawFrame(canvas, createFrequency, createFrequency, 300)
+    expect(drawVisualizerShape.mock.calls.at(-1)[2].motion.spin).toBe(0)
+    expect(drawParticleElements.mock.calls.at(-1)[3]).toBe(0)
+  })
+
   it('draws the visualizer shape with the calculated rumble scale', () => {
     const store = createStore()
     const renderer = createVisualizerRenderer(store)
@@ -46,6 +58,7 @@ describe('visualizer renderer', () => {
     expect(getVisualizerRumbleMotion).toHaveBeenCalledWith(
       store,
       { boost: 1, energy: 0.8, impulse: 0.2 },
+      0,
       0,
       0,
     )

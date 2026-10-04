@@ -101,6 +101,17 @@
         <label class="item-label">Particle Count</label>
         <input type="number" min="1" max="500" v-model.number="selected.count" />
       </div>
+      <template v-if="selected.type !== 'particles'">
+        <PanelRange label="Start Time" :model-value="selected.startTime || 0" @update:model-value="selected.startTime = $event" :min="0" :max="store.duration || 7200" :step="0.1" />
+        <PanelRange label="End Time" :model-value="selected.endTime || 0" @update:model-value="selected.endTime = $event" :min="0" :max="store.duration || 7200" :step="0.1" />
+        <p class="timing-hint">End time 0 keeps the element visible to the end.</p>
+        <div class="row mt-8">
+          <label class="item-label" for="element-animation">Animation</label>
+          <select id="element-animation" :value="selected.animation || 'none'" @change="selected.animation = $event.target.value">
+            <option value="none">None</option><option value="fade">Fade</option><option value="pop">Pop</option>
+          </select>
+        </div>
+      </template>
       <button class="remove-btn" @click="store.deleteSelectedElement()">Delete Selected</button>
     </section>
 
@@ -122,6 +133,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useAppStore } from '../../stores/app.js'
+import PanelRange from './PanelRange.vue'
 import ParticleRangeControls from './ParticleRangeControls.vue'
 
 const store = useAppStore()
@@ -149,6 +161,7 @@ function onMedia(event) {
 <style scoped>
 @import './panel-shared.css';
 
+.timing-hint { font-size: 10px; color: var(--text-muted); margin-top: 8px; }
 .actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .subtle { margin-top: 8px; color: var(--text-muted); }
 .value-label { font-size: 11px; color: var(--accent); font-weight: 600; }

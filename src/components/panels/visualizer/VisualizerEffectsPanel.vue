@@ -19,7 +19,15 @@
 
   <section class="section">
     <ToggleRow label="Fire" v-model="store.fireEnabled" />
+    <template v-if="store.fireEnabled">
+      <PanelRange label="Fire Intensity" v-model="store.fireIntensity" :min="0" :max="100" />
+      <PanelRange label="Fire Detail" v-model="store.fireDetail" :min="1" :max="5" />
+    </template>
     <ToggleRow label="Shadow" v-model="store.shadowEnabled" />
+    <template v-if="store.shadowEnabled">
+      <PanelRange label="Shadow Blur" v-model="store.shadowBlur" :min="0" :max="30" />
+      <PanelRange label="Shadow Opacity" v-model="store.shadowOpacity" :min="0" :max="100" />
+    </template>
     <ToggleRow label="Progress Bar" v-model="store.showProgressBar" />
   </section>
 

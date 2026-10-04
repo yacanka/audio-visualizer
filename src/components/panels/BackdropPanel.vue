@@ -1,8 +1,13 @@
 <template>
   <div class="panel">
     <h3 class="panel-title">Backdrop</h3>
-    <button class="media-btn" @click="triggerImageUpload">Select Media</button>
-    <input ref="imgInput" hidden type="file" accept="image/*" @change="onImageLoad" />
+    <ImageUpload v-model="store.backdropImageSrc" @loaded="onImageLoaded" />
+    <button class="media-btn" :disabled="store.isExporting" @click="videoInput?.click()">Select Background Video</button>
+    <input ref="videoInput" type="file" accept="video/mp4,video/webm" hidden @change="onVideoSelected" />
+    <p v-if="store.backdropVideoFile || store.backdropVideoName" class="media-note">{{ store.backdropVideoFile?.name || store.backdropVideoName }}</p>
+    <p v-if="store.backdropType === 'video'" class="media-note">Muted, looping video follows your audio. Reselect the video after opening a saved project.</p>
+    <p v-if="store.backdropType === 'video' && !store.backdropVideoFile" role="status" class="media-note">Select the original background video to continue.</p>
+    <p v-if="store.backdropVideoStatus" role="status" class="media-note">{{ store.backdropVideoStatus }}</p>
 
     <div class="tabs">
       <button
@@ -23,9 +28,7 @@
           {{ type }}
         </button>
       </div>
-      <div v-if="store.backdropImage && previewUrl" class="img-preview">
-        <img :src="previewUrl" alt="Backdrop preview" />
-      </div>
+
     </section>
 
     <section v-if="isTab('reflection')" class="section">
@@ -54,9 +57,7 @@
     </section>
 
     <section v-if="isTab('drift')" class="section">
-      <ToggleRow label="Drift" v-model="store.backdropDrift" />
-      <PanelRange label="Intensity" v-model="store.backdropDriftIntensity" :min="0" :max="100" />
-      <ToggleRow label="Custom" v-model="store.backdropDriftCustom" />
+      <DriftControls prefix="backdrop" />
     </section>
 
     <section v-if="isTab('rumble')" class="section">
@@ -72,7 +73,7 @@
       <ToggleRow label="Mirror Background" v-model="store.mirrorH" />
       <ToggleRow label="Reactive Speed" v-model="store.backdropReactive" />
       <PanelRange v-if="store.backdropReactive" label="Intensity" v-model="store.backdropReactiveIntensity" :min="0" :max="100" />
-      <div v-if="store.backdropType === 'image'" class="chip-group fit-row">
+      <div v-if="['image', 'video'].includes(store.backdropType)" class="chip-group fit-row">
         <button v-for="fit in fits" :key="fit" :class="['chip', { active: store.backdropImageFit === fit }]" @click="store.backdropImageFit = fit">
           {{ fit }}
         </button>
@@ -84,18 +85,19 @@
 <script setup>
 import { ref } from 'vue'
 import { useAppStore } from '../../stores/app.js'
+import DriftControls from './DriftControls.vue'
+import ImageUpload from './ImageUpload.vue'
 import ColorControls from './backdrop/ColorControls.vue'
 import PresetSwatches from './backdrop/PresetSwatches.vue'
 import PanelRange from './PanelRange.vue'
 import ToggleRow from './ToggleRow.vue'
 
 const store = useAppStore()
-const imgInput = ref(null)
-const previewUrl = ref(null)
+const videoInput = ref(null)
 const fits = ['cover', 'contain', 'fill']
 const reflections = ['none', '2-way', '4-way']
 const rumbles = ['none', 'medium', 'high']
-const types = ['solid', 'gradient', 'image']
+const types = ['solid', 'gradient', 'image', 'video']
 const tabs = [
   { value: 'reflection', label: 'Reflection' },
   { value: 'rotate', label: 'Rotate' },
@@ -111,31 +113,32 @@ function isTab(value) {
 
 function selectType(type) {
   store.backdropType = type
-  if (type === 'image') triggerImageUpload()
 }
 
-function triggerImageUpload() {
-  store.backdropType = 'image'
-  imgInput.value?.click()
+function onImageLoaded(src) {
+  store.backdropImageIsPreset = false
+  store.backdropImage = null
+  store.backdropType = src ? 'image' : 'solid'
 }
 
-function onImageLoad(event) {
-  const file = event.target.files[0]
-  if (!file) return
-  loadImage(file)
+function onVideoSelected(event) {
+  const file = event.target.files?.[0]
   event.target.value = ''
-}
-
-function loadImage(file) {
-  previewUrl.value = URL.createObjectURL(file)
-  const image = new Image()
-  image.onload = () => { store.backdropImage = image }
-  image.src = previewUrl.value
+  if (!file || store.isExporting) return
+  if (!['video/mp4', 'video/webm'].includes(file.type)) {
+    store.backdropVideoStatus = 'Choose an MP4 or WebM video.'
+    return
+  }
+  store.backdropVideoFile = file
+  store.backdropVideoName = file.name
+  store.backdropType = 'video'
 }
 </script>
 
 <style scoped>
 @import './panel-shared.css';
+
+.media-note { color: var(--text-secondary); font-size: 11px; line-height: 1.5; margin-bottom: 10px; overflow-wrap: anywhere; }
 
 .tabs,
 .fit-row {

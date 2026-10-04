@@ -11,7 +11,10 @@ export function createPixiVisualizerRenderer(store, sourceRenderer) {
   const surfaces = new WeakMap()
   const ownedSurfaces = new Set()
 
+  let disposed = false
+
   async function prepare(canvas) {
+    if (disposed) return false
     if (!canUsePixiRenderer(canvas)) return false
     const surface = getOrCreateSurface(canvas, surfaces, ownedSurfaces)
     return surface.ready || surface.promise
@@ -25,6 +28,8 @@ export function createPixiVisualizerRenderer(store, sourceRenderer) {
   }
 
   function dispose() {
+    if (disposed) return
+    disposed = true
     ownedSurfaces.forEach(surface => destroySurface(surface, surfaces))
     ownedSurfaces.clear()
   }
@@ -50,7 +55,7 @@ function createSurface(canvas) {
   const ownerDocument = canvas.ownerDocument
   return {
     app: new Application(), canvas, content: new Container(), failed: false,
-    height: 0, ownerDocument, promise: null, ready: false,
+    height: 0, ownerDocument, promise: null, ready: false, initialized: false, disposed: false,
     sourceCanvas: ownerDocument.createElement('canvas'), sourceSprite: null, width: 0,
   }
 }
@@ -58,6 +63,8 @@ function createSurface(canvas) {
 async function initializeSurface(surface, canvas) {
   try {
     await surface.app.init(getPixiOptions(canvas))
+    surface.initialized = true
+    if (surface.disposed) { destroyApplication(surface); return false }
     completeSurfaceInitialization(surface)
     return true
   } catch {
@@ -109,6 +116,8 @@ function resizeSurface(surface) {
   resizeCanvas(surface.sourceCanvas, size)
   surface.app.renderer.resize(size.w, size.h, 1)
   surface.sourceSprite.texture.source.resize(size.w, size.h, 1)
+  // Canvas textures change geometry when the aspect ratio changes; invalidate cached sprite bounds.
+  surface.sourceSprite.onViewUpdate()
   surface.sourceSprite.width = size.w
   surface.sourceSprite.height = size.h
   return size
@@ -120,7 +129,13 @@ function resizeCanvas(canvas, size) {
 }
 
 function destroySurface(surface, surfaces) {
-  surface.app.destroy(false, { children: true, texture: true, textureSource: true, context: true })
+  surface.disposed = true
+  if (surface.initialized) destroyApplication(surface)
   surfaces.delete(surface.canvas)
   surface.ready = false
+}
+
+function destroyApplication(surface) {
+  surface.initialized = false
+  surface.app.destroy(false, { children: true, texture: true, textureSource: true, context: true })
 }

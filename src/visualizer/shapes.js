@@ -1,12 +1,31 @@
 import { drawLayeredVisualizer } from './layeredShapes.js'
 import { drawSoundVisibleVisualizer } from './soundVisibleVisualizer.js'
+import { getCachedImage } from './images.js'
 
 /** Draw the active visualizer shape. */
 export function drawVisualizerShape(store, ctx, data, size, driftOffset, rumbleScale = 1, animationTime = 0, deltaTime = 0, visualizerState = null) {
   const shapeData = getShapeData(store, data)
   ctx.save()
-  applyVisualizerTransform(store, ctx, size, rumbleScale)
+  applyVisualizerTransform(store, ctx, size, rumbleScale, data.motion)
   drawActiveVisualizer(store, ctx, shapeData, size, driftOffset, animationTime, deltaTime, visualizerState)
+  drawVisualizerImage(store, ctx, size, data.motion)
+  ctx.restore()
+}
+
+function drawVisualizerImage(store, ctx, size, motion) {
+  if (store.visualizerImageVisible === false || store.vizShape !== 'circular') return
+  const image = getCachedImage(store.visualizerImageSrc)
+  if (!image?.complete || !image.naturalWidth) return
+  const diameter = Math.min(size.w, size.h) * (store.visualizerDiameter / 110) * (store.visualizerImageSize / 100)
+  ctx.save()
+  ctx.translate(size.w / 2, size.h / 2)
+  if (store.visualizerLogoLocked && store.visualizerSpin) ctx.rotate(-(motion?.spin || 0) * Math.PI / 180)
+  ctx.beginPath()
+  ctx.arc(0, 0, diameter / 2, 0, Math.PI * 2)
+  ctx.clip()
+  const scale = diameter / Math.min(image.naturalWidth, image.naturalHeight)
+  ctx.drawImage(image, -image.naturalWidth * scale / 2, -image.naturalHeight * scale / 2,
+    image.naturalWidth * scale, image.naturalHeight * scale)
   ctx.restore()
 }
 
@@ -16,7 +35,7 @@ function drawActiveVisualizer(store, ctx, shapeData, size, driftOffset, animatio
     return
   }
   if (store.vizShape === 'bars' || store.vizShape === 'circular') {
-    drawLayeredVisualizer(store, ctx, shapeData.frequency, size, driftOffset)
+    drawLayeredVisualizer(store, ctx, shapeData.frequency, size, driftOffset, shapeData.layerFrequencies, shapeData.motion?.layerSpins)
   }
   if (store.vizShape === 'mirror') drawLegacyMirror(store, ctx, shapeData.frequency, size)
   if (store.vizShape === 'wave') drawWave(store, ctx, shapeData.time, size)
@@ -24,17 +43,21 @@ function drawActiveVisualizer(store, ctx, shapeData, size, driftOffset, animatio
 }
 
 function getShapeData(store, data) {
+  // Layered shapes invert their selected frequency band, never the entire FFT.
+  if (store.visualizerMode !== 'soundvisible' && ['bars', 'circular'].includes(store.vizShape)) return data
   if (!store.vizInvert) return data
-  return { frequency: [...data.frequency].reverse(), time: [...data.time].reverse() }
+  return { ...data, frequency: [...data.frequency].reverse(), time: [...data.time].reverse(),
+    layerFrequencies: data.layerFrequencies?.map(frequency => [...frequency].reverse()) }
 }
 
-function applyVisualizerTransform(store, ctx, size, rumbleScale) {
+function applyVisualizerTransform(store, ctx, size, rumbleScale, motion = {}) {
   const x = (store.visualizerXPosition / 100) * size.w * 0.5
   const y = (store.visualizerYPosition / 100) * size.h * 0.5
-  const spin = store.visualizerSpin ? store.currentTime * 24 : 0
-  ctx.translate(size.w / 2 + x, size.h / 2 + y)
-  ctx.rotate(((store.visualizerRotation + spin) * Math.PI) / 180)
-  ctx.scale(rumbleScale, rumbleScale)
+  const spin = store.visualizerSpin ? (motion.spin ?? store.currentTime * 24) : 0
+  ctx.translate(size.w / 2 + x + ((motion.x || 0) + (motion.shakeX || 0)) * size.w,
+    size.h / 2 + y + ((motion.y || 0) + (motion.shakeY || 0)) * size.h)
+  ctx.rotate(((store.visualizerRotation + spin + (motion.rotation || 0)) * Math.PI) / 180)
+  ctx.scale(rumbleScale * (motion.scale || 1), rumbleScale * (motion.scale || 1))
   ctx.translate(-size.w / 2, -size.h / 2)
 }
 

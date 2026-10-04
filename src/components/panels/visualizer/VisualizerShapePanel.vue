@@ -13,6 +13,11 @@
     </div>
   </section>
 
+  <section v-if="isClassic && store.vizShape === 'circular'" class="section">
+    <ImageUpload v-model="store.visualizerImageSrc" label="Select Logo / Image" @loaded="store.visualizerImageIsPreset = false" />
+    <ToggleRow label="Show Image" v-model="store.visualizerImageVisible" />
+  </section>
+
   <template v-if="isClassic">
     <section class="section">
       <label class="section-label">Shape</label>
@@ -33,6 +38,13 @@
       <PanelRange :label="countLabel" v-model="store.barCount" :min="4" :max="200" :step="4" />
       <PanelRange v-if="store.vizStyle === 'bar'" label="Bar Width" v-model="store.visualizerBarWidth" :min="1" :max="100" />
       <PanelRange v-if="store.vizStyle === 'point'" label="Point Radius" v-model="store.visualizerPointRadius" :min="1" :max="20" />
+      <div class="row mt-8">
+        <label class="item-label" for="wave-movement">Wave Direction</label>
+        <select id="wave-movement" v-model="store.visualizerMovement">
+          <option value="outward">Outward</option><option value="inward">Inward</option>
+        </select>
+      </div>
+      <ToggleRow v-if="store.vizShape === 'circular' && store.vizStyle === 'solid'" label="Hollow Center" v-model="store.visualizerHollowCenter" />
     </section>
 
     <section class="section">
@@ -89,12 +101,12 @@
       <PanelRange label="Image Size" v-model="store.visualizerImageSize" :min="10" :max="160" />
     </template>
     <template v-else>
-      <PanelRange label="Width" v-model="store.visualizerWidth" :min="10" :max="100" />
+      <PanelRange label="Width" v-model="store.visualizerWidth" :min="1" :max="120" />
       <PanelRange label="Base Height" v-model="store.visualizerBaseHeight" :min="-50" :max="50" />
     </template>
-    <PanelRange label="X Position" v-model="store.visualizerXPosition" :min="-50" :max="50" />
-    <PanelRange label="Y Position" v-model="store.visualizerYPosition" :min="-50" :max="50" />
-    <PanelRange :label="heightLabel" v-model="store.visualizerWaveHeight" :min="5" :max="80" />
+    <PanelRange label="X Position" v-model="store.visualizerXPosition" :min="-100" :max="100" />
+    <PanelRange label="Y Position" v-model="store.visualizerYPosition" :min="-100" :max="100" />
+    <PanelRange :label="heightLabel" v-model="store.visualizerWaveHeight" :min="0" :max="100" />
     <PanelRange v-if="isClassic" label="Separation" v-model="store.visualizerSeparation" :min="0" :max="100" />
     <PanelRange label="Rotation" v-model="store.visualizerRotation" :min="0" :max="360" />
     <PanelRange v-if="isClassic && store.vizShape === 'circular'" label="Center Cutout" v-model="store.centerCutout" :min="0" :max="80" />
@@ -105,6 +117,8 @@
 import { computed } from 'vue'
 import { useAppStore } from '../../../stores/app.js'
 import PanelRange from '../PanelRange.vue'
+import ImageUpload from '../ImageUpload.vue'
+import ToggleRow from '../ToggleRow.vue'
 import ModeToggles from './ModeToggles.vue'
 
 const store = useAppStore()

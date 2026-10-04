@@ -1,0 +1,412 @@
+[
+  {
+    "preset": "Northern Lights",
+    "path": "/presets/bg-Northern-Lights.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Northern-Lights.jpeg"
+  },
+  {
+    "preset": "Purification",
+    "path": "/presets/bg-Purification.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Purification.jpeg"
+  },
+  {
+    "preset": "Jungle Cat",
+    "path": "/presets/bg-jungle-cat.jpg",
+    "source": "https://specterr.b-cdn.net/bg-jungle-cat.jpg"
+  },
+  {
+    "preset": "Default",
+    "path": "/presets/bg-default.jpg",
+    "source": "https://specterr.b-cdn.net/bg-default.jpg"
+  },
+  {
+    "preset": "Red Planet",
+    "path": "/presets/bg-red-planet.jpg",
+    "source": "https://specterr.b-cdn.net/bg-red-planet.jpg"
+  },
+  {
+    "preset": "Coil",
+    "path": "/presets/bg-coil.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-coil.jpeg"
+  },
+  {
+    "preset": "Eclipse",
+    "path": "/presets/bg-eclipse.jpg",
+    "source": "https://specterr.b-cdn.net/bg-eclipse.jpg"
+  },
+  {
+    "preset": "Magma",
+    "path": "/presets/bg-magma.jpg",
+    "source": "https://specterr.b-cdn.net/bg-magma.jpg"
+  },
+  {
+    "preset": "Skyline",
+    "path": "/presets/bg-skyline.jpg",
+    "source": "https://specterr.b-cdn.net/bg-skyline.jpg"
+  },
+  {
+    "preset": "Rebellion",
+    "path": "/presets/bg-Rebellion.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Rebellion.jpeg"
+  },
+  {
+    "preset": "Pixie Dust",
+    "path": "/presets/bg-Pixie-Dust.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Pixie-Dust.jpeg"
+  },
+  {
+    "preset": "Neon Intrusion",
+    "path": "/presets/bg-neon-intrusion.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-neon-intrusion.jpeg"
+  },
+  {
+    "preset": "Range of Fire",
+    "path": "/presets/bg-range-of-fire.jpg",
+    "source": "https://specterr.b-cdn.net/bg-range-of-fire.jpg"
+  },
+  {
+    "preset": "Simple Bars",
+    "path": "/presets/bg-simple-bars.jpg",
+    "source": "https://specterr.b-cdn.net/bg-simple-bars.jpg"
+  },
+  {
+    "preset": "Sparks Fly",
+    "path": "/presets/bg-Sparks-Fly.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Sparks-Fly.jpeg"
+  },
+  {
+    "preset": "Glacier",
+    "path": "/presets/bg-glacier.jpg",
+    "source": "https://specterr.b-cdn.net/bg-glacier.jpg"
+  },
+  {
+    "preset": "Morning Dew",
+    "path": "/presets/bg-Morning-Dew.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Morning-Dew.jpeg"
+  },
+  {
+    "preset": "Love Spell",
+    "path": "/presets/bg-Love-Spell.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Love-Spell.jpeg"
+  },
+  {
+    "preset": "Mood Ring",
+    "path": "/presets/bg-mood-ring.jpg",
+    "source": "https://specterr.b-cdn.net/bg-mood-ring.jpg"
+  },
+  {
+    "preset": "Stag",
+    "path": "/presets/bg-stag.jpg",
+    "source": "https://specterr.b-cdn.net/bg-stag.jpg"
+  },
+  {
+    "preset": "Algo",
+    "path": "/presets/bg-algo.jpg",
+    "source": "https://specterr.b-cdn.net/bg-algo.jpg"
+  },
+  {
+    "preset": "Urban Rhapsody",
+    "path": "/presets/bg-urban-rhapsody.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-urban-rhapsody.jpeg"
+  },
+  {
+    "preset": "Neon Reaper",
+    "path": "/presets/bg-Neon-Reaper.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Neon-Reaper.jpeg"
+  },
+  {
+    "preset": "Lava Plume",
+    "path": "/presets/bg-Lava-Plume.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Lava-Plume.jpeg"
+  },
+  {
+    "preset": "Gold Rings",
+    "path": "/presets/bg-Gold-Rings.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Gold-Rings.jpeg"
+  },
+  {
+    "preset": "Space Worm",
+    "path": "/presets/bg-Space-Worm.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Space-Worm.jpeg"
+  },
+  {
+    "preset": "Glitter Storm",
+    "path": "/presets/bg-Glitter-Storm.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Glitter-Storm.jpeg"
+  },
+  {
+    "preset": "Meteor Shower",
+    "path": "/presets/bg-Meteor-Shower.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Meteor-Shower.jpeg"
+  },
+  {
+    "preset": "Chromatic",
+    "path": "/presets/bg-chromatic.jpg",
+    "source": "https://specterr.b-cdn.net/bg-chromatic.jpg"
+  },
+  {
+    "preset": "Maelstrom",
+    "path": "/presets/bg-maelstrom.jpg",
+    "source": "https://specterr.b-cdn.net/bg-maelstrom.jpg"
+  },
+  {
+    "preset": "Seven Suns",
+    "path": "/presets/bg-Seven-Suns.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Seven-Suns.jpeg"
+  },
+  {
+    "preset": "Inferno",
+    "path": "/presets/bg-inferno.jpg",
+    "source": "https://specterr.b-cdn.net/bg-inferno.jpg"
+  },
+  {
+    "preset": "Shadow Script",
+    "path": "/presets/bg-Shadow-Script.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Shadow-Script.jpeg"
+  },
+  {
+    "preset": "Star Strands",
+    "path": "/presets/bg-star-strands.jpg",
+    "source": "https://specterr.b-cdn.net/bg-star-strands.jpg"
+  },
+  {
+    "preset": "Power Orb",
+    "path": "/presets/bg-power-orb.jpg",
+    "source": "https://specterr.b-cdn.net/bg-power-orb.jpg"
+  },
+  {
+    "preset": "Crossing Bolts",
+    "path": "/presets/bg-Crossing-Bolts.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Crossing-Bolts.jpeg"
+  },
+  {
+    "preset": "Pinky Pop",
+    "path": "/presets/bg-Pinky-Pop.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Pinky-Pop.jpeg"
+  },
+  {
+    "preset": "Beatdown",
+    "path": "/presets/bg-beatdown.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-beatdown.jpeg"
+  },
+  {
+    "preset": "Space Laser",
+    "path": "/presets/bg-space-laser.jpg",
+    "source": "https://specterr.b-cdn.net/bg-space-laser.jpg"
+  },
+  {
+    "preset": "Satellite",
+    "path": "/presets/bg-satellite.jpg",
+    "source": "https://specterr.b-cdn.net/bg-satellite.jpg"
+  },
+  {
+    "preset": "Stardust Sky",
+    "path": "/presets/bg-Stardust-Sky.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Stardust-Sky.jpeg"
+  },
+  {
+    "preset": "Neo Santa",
+    "path": "/presets/bg-Neo-Santa.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Neo-Santa.jpeg"
+  },
+  {
+    "preset": "Rabid",
+    "path": "/presets/bg-rabid.jpg",
+    "source": "https://specterr.b-cdn.net/bg-rabid.jpg"
+  },
+  {
+    "preset": "Bass Blade",
+    "path": "/presets/bg-bass-blade.jpg",
+    "source": "https://specterr.b-cdn.net/bg-bass-blade.jpg"
+  },
+  {
+    "preset": "Sea of Stars",
+    "path": "/presets/bg-Sea-of-Stars.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Sea-of-Stars.jpeg"
+  },
+  {
+    "preset": "Neon Dark",
+    "path": "/presets/bg-neon-dark.jpg",
+    "source": "https://specterr.b-cdn.net/bg-neon-dark.jpg"
+  },
+  {
+    "preset": "Beyond Space",
+    "path": "/presets/bg-Beyond-Space.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Beyond-Space.jpeg"
+  },
+  {
+    "preset": "Virus",
+    "path": "/presets/bg-virus.jpg",
+    "source": "https://specterr.b-cdn.net/bg-virus.jpg"
+  },
+  {
+    "preset": "Vinyl Vibes",
+    "path": "/presets/bg-Vinyl-Vibes.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Vinyl-Vibes.jpeg"
+  },
+  {
+    "preset": "Spark Storm",
+    "path": "/presets/bg-Spark-Storm.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Spark-Storm.jpeg"
+  },
+  {
+    "preset": "White Vacancy",
+    "path": "/presets/bg-White-Vacancy.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-White-Vacancy.jpeg"
+  },
+  {
+    "preset": "Rose Tinted",
+    "path": "/presets/bg-Rose-Tinted.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Rose-Tinted.jpeg"
+  },
+  {
+    "preset": "Radioactive Spider",
+    "path": "/presets/bg-radioactive-spider.jpg",
+    "source": "https://specterr.b-cdn.net/bg-radioactive-spider.jpg"
+  },
+  {
+    "preset": "Chromatic Current",
+    "path": "/presets/bg-Chromatic-Current.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Chromatic-Current.jpeg"
+  },
+  {
+    "preset": "Roller Rhapsody",
+    "path": "/presets/bg-Roller-Rhapsody.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Roller-Rhapsody.jpeg"
+  },
+  {
+    "preset": "Just Your Logo",
+    "path": "/presets/bg-just-your-logo.jpg",
+    "source": "https://specterr.b-cdn.net/bg-just-your-logo.jpg"
+  },
+  {
+    "preset": "Counting Stars",
+    "path": "/presets/bg-Counting-Stars.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Counting-Stars.jpeg"
+  },
+  {
+    "preset": "Brain Blast",
+    "path": "/presets/bg-Brain-Blast.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Brain-Blast.jpeg"
+  },
+  {
+    "preset": "Smokescreen",
+    "path": "/presets/bg-Smokescreen.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Smokescreen.jpeg"
+  },
+  {
+    "preset": "Amber Waves",
+    "path": "/presets/bg-Amber-Waves.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Amber-Waves.jpeg"
+  },
+  {
+    "preset": "Diamond Fire",
+    "path": "/presets/bg-Diamond-Fire.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Diamond-Fire.jpeg"
+  },
+  {
+    "preset": "Holiday Glow",
+    "path": "/presets/bg-Holiday-Glow.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Holiday-Glow.jpeg"
+  },
+  {
+    "preset": "Spin Cycle",
+    "path": "/presets/bg-Spin-Cycle.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Spin-Cycle.jpeg"
+  },
+  {
+    "preset": "Chromatic Hearts",
+    "path": "/presets/bg-Chromatic-Hearts.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Chromatic-Hearts.jpeg"
+  },
+  {
+    "preset": "Ultrafeel",
+    "path": "/presets/bg-Ultrafeel.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Ultrafeel.jpeg"
+  },
+  {
+    "preset": "Fireworks",
+    "path": "/presets/bg-Fireworks.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Fireworks.jpeg"
+  },
+  {
+    "preset": "Jellyfish Fields",
+    "path": "/presets/bg-Jellyfish-Fields.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Jellyfish-Fields.jpeg"
+  },
+  {
+    "preset": "Underwater",
+    "path": "/presets/bg-Underwater.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Underwater.jpeg"
+  },
+  {
+    "preset": "Afterhours",
+    "path": "/presets/bg-Afterhours.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Afterhours.jpeg"
+  },
+  {
+    "preset": "Lifestream",
+    "path": "/presets/bg-Lifestream.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Lifestream.jpeg"
+  },
+  {
+    "preset": "Eye of the Storm",
+    "path": "/presets/bg-Eye-of-the-Storm.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Eye-of-the-Storm.jpeg"
+  },
+  {
+    "preset": "Groovy Trip",
+    "path": "/presets/bg-Groovy-Trip.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Groovy-Trip.jpeg"
+  },
+  {
+    "preset": "Pixel Perfect",
+    "path": "/presets/bg-Pixel-Perfect.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Pixel-Perfect.jpeg"
+  },
+  {
+    "preset": "Blue Skies",
+    "path": "/presets/bg-blue-skies.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-blue-skies.jpeg"
+  },
+  {
+    "preset": "Ocean Bloom",
+    "path": "/presets/bg-Ocean-Bloom.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Ocean-Bloom.jpeg"
+  },
+  {
+    "preset": "Rainbow Road",
+    "path": "/presets/bg-rainbow-road.jpg",
+    "source": "https://specterr.b-cdn.net/bg-rainbow-road.jpg"
+  },
+  {
+    "preset": "Simple Points",
+    "path": "/presets/bg-simple-points.jpg",
+    "source": "https://specterr.b-cdn.net/bg-simple-points.jpg"
+  },
+  {
+    "preset": "Psychonaut",
+    "path": "/presets/bg-Psychonaut.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Psychonaut.jpeg"
+  },
+  {
+    "preset": "Neon Roses",
+    "path": "/presets/bg-Neon-Roses.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Neon-Roses.jpeg"
+  },
+  {
+    "preset": "Planet Vibes",
+    "path": "/presets/bg-Planet-Vibes.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Planet-Vibes.jpeg"
+  },
+  {
+    "preset": "What the Funk",
+    "path": "/presets/bg-What-the-Funk.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-What-the-Funk.jpeg"
+  },
+  {
+    "preset": "Petal Dance",
+    "path": "/presets/bg-Petal-Dance.jpeg",
+    "source": "https://specterr.b-cdn.net/bg-Petal-Dance.jpeg"
+  }
+]

@@ -37,6 +37,14 @@ describe('spectrum processing', () => {
 
     expect(circular[0]).toBeGreaterThan(flat[0])
   })
+  it('inverts the selected bass band without replacing it with silent treble bins', () => {
+    const data = new Uint8Array([255, 128, 0, 0, 0, 0, 0, 0])
+    const store = createStore({ vizSmooth: false, vizSpectrum: 'bass' })
+    const original = createSpectrumMagnitudes(store, data, 4, baseLayout)
+    const inverted = createSpectrumMagnitudes({ ...store, vizInvert: true }, data, 4, baseLayout)
+    expect(inverted).toEqual([...original].reverse())
+    expect(Math.max(...inverted)).toBe(1)
+  })
 })
 
 function createStore(overrides = {}) {

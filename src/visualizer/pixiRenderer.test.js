@@ -31,6 +31,7 @@ const pixi = vi.hoisted(() => {
 
   class Sprite {
     constructor(resource) {
+      this.onViewUpdate = vi.fn()
       this.position = { set: vi.fn() }
       this.texture = { source: { resize: vi.fn(), update: vi.fn() } }
       this.resource = resource
@@ -87,6 +88,23 @@ describe('Pixi visualizer renderer', () => {
     expect(pixi.apps[0].stage.children[0].filters).toEqual([pixi.filters[0]])
     expect(pixi.filters[0].scale.x).toBeGreaterThan(10)
     expect(pixi.apps[0].render).toHaveBeenCalled()
+  })
+
+  it('invalidates texture geometry when switching to portrait', async () => {
+    const source = { drawFrame: vi.fn() }
+    const renderer = createPixiVisualizerRenderer(createStore(), source)
+    const canvas = createTargetCanvas()
+    await renderer.prepare(canvas)
+    renderer.drawFrame(canvas, getHotFrequencyData, getTimeData, 100)
+    canvas.width = 360; canvas.height = 640
+    renderer.drawFrame(canvas, getHotFrequencyData, getTimeData, 200)
+    expect(pixi.sprites[0].texture.source.resize).toHaveBeenLastCalledWith(360, 640, 1)
+    expect(pixi.sprites[0].onViewUpdate).toHaveBeenCalledTimes(2)
+    expect(pixi.sprites[0].width).toBe(360)
+    expect(pixi.sprites[0].height).toBe(640)
+    renderer.dispose()
+    renderer.dispose()
+    expect(pixi.apps[0].destroy).toHaveBeenCalledOnce()
   })
 
   it('removes the displacement filter when the effect is disabled', async () => {

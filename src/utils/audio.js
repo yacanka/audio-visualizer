@@ -33,3 +33,25 @@ export function buildWaveformSamples(rawData, sampleCount = 1200) {
 
   return normalizeSamples(samples)
 }
+
+/** Measure all decoded channels; a single track-wide gain preserves beat dynamics. */
+export function getAudioPeak(buffer) {
+  let peak = 0
+  for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+    for (const sample of buffer.getChannelData(channel)) peak = Math.max(peak, Math.abs(sample))
+  }
+  return peak
+}
+
+/** Adjust visual analysis in the analyser's dB scale without changing audible volume. */
+export function applySpectrumOptions(data, { normalize, bassBoost, peak, binHertz, decibelRange }) {
+  if (!normalize && !bassBoost) return data
+  const gain = normalize && peak > 0 ? clamp(20 * Math.log10(0.95 / peak), -12, 12) : 0
+  const bytePerDb = 255 / Math.max(1, decibelRange)
+  return Uint8Array.from(data, (value, index) => {
+    // An analyser's zero bins represent silence, which must remain silent.
+    if (!value) return 0
+    const bassGain = bassBoost ? 6 / (1 + (index * binHertz / 250) ** 2) : 0
+    return clamp(Math.round(value + (gain + bassGain) * bytePerDb), 0, 255)
+  })
+}

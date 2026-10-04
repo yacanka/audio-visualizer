@@ -1,15 +1,35 @@
 import { forEachCircularBarAngle } from './circularReflection.js'
 import { getLayerLayout, getRenderableLayers } from './layerLayout.js'
 import { createSpectrumMagnitudes } from './spectrumProcessing.js'
+import { getLayerPaint } from './layerPaint.js'
 /** Draw all visible visualizer layers using the selected style and layout mode. */
-export function drawLayeredVisualizer(store, ctx, frequencyData, size, driftOffset) {
+export function drawLayeredVisualizer(store, ctx, frequencyData, size, driftOffset, layerFrequencies, layerSpins = {}) {
   const layers = getRenderableLayers(store)
   for (let index = layers.length - 1; index >= 0; index--) {
     if (!layers[index].visible) continue
     const layout = getLayerLayout(store.vizLayerMode, index, layers.length, store.visualizerSeparation)
-    drawLayer(store, ctx, frequencyData, size, driftOffset, layers[index], layout)
+    ctx.save()
+    ctx.globalAlpha = layers[index].opacity
+    const layer = layers[index]
+    const settings = layer.customEnabled ? { ...store, ...layer.settings } : store
+    const pixelScale = Math.min(size.w, size.h) / 720
+    const scaledSettings = { ...settings, visualizerPointRadius: settings.visualizerPointRadius * pixelScale }
+    if (layer.customEnabled) {
+      const spin = layer.settings.visualizerSpin ? (layerSpins[layer.id] || 0) : 0
+      applyLayerRotation(ctx, size, (layer.settings.visualizerRotation || 0) + spin)
+    }
+    drawLayer(scaledSettings, ctx, layerFrequencies?.[index] || frequencyData, size, driftOffset,
+      { ...layer, outlineWidth: layer.outlineWidth * pixelScale }, layout)
+    ctx.restore()
   }
   if (store.vizShape === 'circular') drawCenterCutout(store, ctx, size, driftOffset)
+}
+
+function applyLayerRotation(ctx, size, rotation) {
+  if (!rotation) return
+  ctx.translate(size.w / 2, size.h / 2)
+  ctx.rotate(rotation * Math.PI / 180)
+  ctx.translate(-size.w / 2, -size.h / 2)
 }
 
 function drawLayer(store, ctx, data, size, driftOffset, layer, layout) {
@@ -22,9 +42,9 @@ function drawLayer(store, ctx, data, size, driftOffset, layer, layout) {
 function drawCircularLayer(store, ctx, data, size, driftOffset, layer, layout) {
   const circle = getCircleMetrics(store, size, driftOffset, layout)
   const bars = collectCircularBars(store, data, circle, layout)
-  if (store.vizStyle === 'solid') drawCircularSolid(ctx, bars, circle, layer)
-  if (store.vizStyle === 'bar') bars.forEach(bar => drawCircularBar(store, ctx, bar, circle, layer))
-  if (store.vizStyle === 'point') bars.forEach(bar => drawCircularPoint(store, ctx, bar, layer))
+  if (store.vizStyle === 'solid') drawCircularSolid(store, ctx, bars, circle, getSolidPaint(layer, bars))
+  if (store.vizStyle === 'bar') bars.forEach(bar => drawCircularBar(store, ctx, bar, circle, getLayerPaint(layer, bar.magnitude)))
+  if (store.vizStyle === 'point') bars.forEach(bar => drawCircularPoint(store, ctx, bar, getLayerPaint(layer, bar.magnitude)))
 }
 
 function getCircleMetrics(store, size, driftOffset, layout) {
@@ -34,7 +54,7 @@ function getCircleMetrics(store, size, driftOffset, layout) {
     cx: size.w / 2 + driftOffset * 0.3,
     cy: size.h / 2,
     radius: baseRadius * (1 + layout.baseOffsetScale) * scale,
-    maxHeight: Math.min(size.w, size.h) * 0.25 * layout.heightScale * scale,
+    maxHeight: Math.min(size.w, size.h) * (store.visualizerWaveHeight / 100) * layout.heightScale * scale,
   }
 }
 
@@ -42,22 +62,28 @@ function collectCircularBars(store, data, circle, layout) {
   const bars = []
   const magnitudes = createSpectrumMagnitudes(store, data, store.barCount, layout, shouldLoopSpectrum(store))
   forEachCircularBarAngle(store.vizReflection, store.barCount, (angle, _index, ratio) => {
-    const height = getMagnitudeAtRatio(magnitudes, ratio) * circle.maxHeight
-    bars.push({ angle, height, inner: pointOnCircle(circle, circle.radius, angle), outer: pointOnCircle(circle, circle.radius + height, angle) })
+    const magnitude = getMagnitudeAtRatio(magnitudes, ratio)
+    const height = store.visualizerMovement === 'inward'
+      ? -Math.min(circle.radius, magnitude * circle.maxHeight) : magnitude * circle.maxHeight
+    bars.push({ angle, height, magnitude, inner: pointOnCircle(circle, circle.radius, angle), outer: pointOnCircle(circle, circle.radius + height, angle) })
   })
   bars.sort((first, second) => first.angle - second.angle)
   return bars
 }
-function drawCircularSolid(ctx, bars, circle, layer) {
+function drawCircularSolid(store, ctx, bars, circle, layer) {
   if (!bars.length) return
   ctx.beginPath()
   ctx.moveTo(bars[0].outer.x, bars[0].outer.y)
   bars.slice(1).forEach(bar => ctx.lineTo(bar.outer.x, bar.outer.y))
-  ;[...bars].reverse().forEach((bar) => {
-    const inner = pointOnCircle(circle, circle.radius, bar.angle)
-    ctx.lineTo(inner.x, inner.y)
-  })
   ctx.closePath()
+  // Separate closed contours avoid a visible seam between the first and last sample.
+  // Missing flags retain the hollow center of version-1 projects.
+  if (store.visualizerHollowCenter !== false) {
+    const inner = [...bars].reverse()
+    ctx.moveTo(inner[0].inner.x, inner[0].inner.y)
+    inner.slice(1).forEach(bar => ctx.lineTo(bar.inner.x, bar.inner.y))
+    ctx.closePath()
+  }
   paintShape(ctx, layer)
 }
 
@@ -68,7 +94,7 @@ function drawCircularBar(store, ctx, bar, circle, layer) {
 }
 
 function drawCircularPoint(store, ctx, bar, layer) {
-  const radius = Math.max(1, store.visualizerPointRadius)
+  const radius = Math.max(0.1, store.visualizerPointRadius)
   ctx.beginPath()
   ctx.arc(bar.outer.x, bar.outer.y, radius, 0, Math.PI * 2)
   paintShape(ctx, layer)
@@ -77,9 +103,9 @@ function drawCircularPoint(store, ctx, bar, layer) {
 function drawFlatLayer(store, ctx, data, size, layer, layout) {
   const metrics = getFlatMetrics(store, size, layout)
   const points = collectFlatPoints(store, data, metrics, layout)
-  if (store.vizStyle === 'solid') drawFlatSolid(store, ctx, points, metrics, layer)
-  if (store.vizStyle === 'bar') points.forEach(point => drawFlatBar(store, ctx, point, metrics, layer))
-  if (store.vizStyle === 'point') points.forEach(point => drawFlatPoint(store, ctx, point, metrics, layer))
+  if (store.vizStyle === 'solid') drawFlatSolid(store, ctx, points, metrics, getSolidPaint(layer, points))
+  if (store.vizStyle === 'bar') points.forEach(point => drawFlatBar(store, ctx, point, metrics, getLayerPaint(layer, point.magnitude)))
+  if (store.vizStyle === 'point') points.forEach(point => drawFlatPoint(store, ctx, point, metrics, getLayerPaint(layer, point.magnitude)))
 }
 
 function getFlatMetrics(store, size, layout) {
@@ -101,7 +127,9 @@ function collectFlatPoints(store, data, metrics, layout) {
   return Array.from({ length: count }, (_, index) => {
     const ratio = count === 1 ? 0 : index / (count - 1)
     const sourceRatio = isHorizontalMirror(store.vizReflection) ? Math.abs(ratio * 2 - 1) : ratio
-    return { x: metrics.startX + ratio * metrics.width, height: getMagnitudeAtRatio(magnitudes, sourceRatio) * metrics.height }
+    const magnitude = getMagnitudeAtRatio(magnitudes, sourceRatio)
+    const direction = store.visualizerMovement === 'inward' ? -1 : 1
+    return { x: metrics.startX + ratio * metrics.width, height: direction * magnitude * metrics.height, magnitude }
   })
 }
 
@@ -119,7 +147,8 @@ function drawFlatSolid(store, ctx, points, metrics, layer) {
 function drawFlatBar(store, ctx, point, metrics, layer) {
   const width = Math.max(1, (metrics.width / store.barCount) * (store.visualizerBarWidth / 100))
   const bottom = isVerticalMirror(store.vizReflection) ? metrics.baseline + point.height : metrics.baseline
-  const rectangle = { x: point.x - width / 2, y: metrics.baseline - point.height, width, height: bottom - metrics.baseline + point.height }
+  const top = metrics.baseline - point.height
+  const rectangle = { x: point.x - width / 2, y: Math.min(top, bottom), width, height: Math.abs(bottom - top) }
   ctx.fillStyle = layer.fillColor
   ctx.fillRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
   if (layer.outlineWidth > 0) drawRectangleOutline(ctx, rectangle, layer)
@@ -138,6 +167,11 @@ function getMagnitudeAtRatio(magnitudes, ratio) {
   return lower + (upper - lower) * (position % 1)
 }
 
+function getSolidPaint(layer, points) {
+  const average = points.reduce((sum, point) => sum + point.magnitude, 0) / Math.max(1, points.length)
+  return getLayerPaint(layer, average * 5)
+}
+
 function drawLine(ctx, start, end, color, width) {
   if (width <= 0) return
   ctx.beginPath()
@@ -151,7 +185,7 @@ function drawLine(ctx, start, end, color, width) {
 
 function drawPoint(ctx, x, y, radius, layer) {
   ctx.beginPath()
-  ctx.arc(x, y, Math.max(1, radius), 0, Math.PI * 2)
+  ctx.arc(x, y, Math.max(0.1, radius), 0, Math.PI * 2)
   paintShape(ctx, layer)
 }
 

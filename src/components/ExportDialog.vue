@@ -1,5 +1,5 @@
 <template>
-  <AppDialog title="Export Video" @close="$emit('close')">
+  <AppDialog title="Export Video" @close="close">
     <div class="content">
       <div class="summary">
         <span>{{ store.previewQuality }}p</span>
@@ -7,29 +7,33 @@
         <span>{{ formatTime(exportDuration) }}</span>
       </div>
       <p>{{ exportCopy }}</p>
-      <button class="primary" :disabled="exporting" @click="startExport">
-        {{ exporting ? 'Export in progress...' : 'Start Export' }}
+      <button class="primary" :disabled="store.isExporting" @click="startExport">
+        {{ store.isExporting ? 'Export in progress...' : 'Start Export' }}
       </button>
-      <p v-if="store.exportStatus" class="status">{{ store.exportStatus }}</p>
+      <progress v-if="store.isExporting" :value="store.exportProgress" max="100" aria-label="Export progress" />
+      <button v-if="store.isExporting" class="cancel" @click="$emit('cancel')">Cancel Export</button>
+      <p v-if="store.exportStatus" role="status" class="status">{{ store.exportStatus }}</p>
     </div>
   </AppDialog>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useAppStore } from '../stores/app.js'
 import AppDialog from './AppDialog.vue'
 
-const emit = defineEmits(['close', 'start'])
+const emit = defineEmits(['close', 'start', 'cancel'])
 const store = useAppStore()
-const exporting = ref(false)
-const exportDuration = computed(() => store.selectedDuration || store.duration || 5)
+const exportDuration = computed(() => store.selectedDuration || store.duration || (store.backdropType === 'video' && store.backdropVideoDuration) || 5)
 const exportCopy = computed(() => `${formatTime(exportDuration.value)} of audio will be exported.`)
 
-async function startExport() {
-  exporting.value = true
-  await emit('start', { duration: exportDuration.value })
-  exporting.value = false
+function close() {
+  if (store.isExporting) emit('cancel')
+  emit('close')
+}
+
+function startExport() {
+  emit('start', { duration: exportDuration.value })
 }
 
 function formatTime(value) {
@@ -57,5 +61,7 @@ p { color: var(--text-secondary); font-size: 12px; }
   font-weight: 600;
 }
 .primary:disabled { opacity: 0.6; cursor: wait; }
+progress { width: 100%; accent-color: var(--accent); }
+.cancel { color: var(--text-secondary); padding: 8px; }
 .status { color: var(--accent); }
 </style>

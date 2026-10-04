@@ -4,6 +4,7 @@
       <label class="item-label">{{ label }}</label>
       <input
         type="number"
+        :aria-label="label"
         :min="min"
         :max="max"
         :step="step"
@@ -14,6 +15,7 @@
     <div class="slider-row">
       <input
         type="range"
+        :aria-label="label"
         :min="min"
         :max="max"
         :step="step"
@@ -26,7 +28,7 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   label: { type: String, required: true },
   max: { type: Number, required: true },
   min: { type: Number, required: true },
@@ -37,7 +39,8 @@ defineProps({
 const emit = defineEmits(['update:modelValue', 'change'])
 
 function updateValue(value) {
-  emit('update:modelValue', Number(value))
+  const number = Number(value)
+  if (Number.isFinite(number)) emit('update:modelValue', Math.min(props.max, Math.max(props.min, number)))
 }
 </script>
 

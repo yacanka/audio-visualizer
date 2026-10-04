@@ -32,7 +32,22 @@
         <button v-else-if="currentStep.id === 'audio'" class="primary-btn" @click="$emit('upload')">
           Upload Audio
         </button>
-        <p v-else class="hint">{{ stepHint }}</p>
+        <template v-else-if="currentStep.id === 'images'">
+          <ImageUpload v-model="store.visualizerImageSrc" label="Visualizer Image" @loaded="store.visualizerImageIsPreset = false" />
+          <ImageUpload v-model="store.backdropImageSrc" label="Backdrop Image" @loaded="setBackdrop" />
+        </template>
+        <template v-else-if="currentStep.id === 'text'">
+          <input class="guide-input" aria-label="Track name" v-model="store.titleText" placeholder="Track name" />
+          <input class="guide-input" aria-label="Artist name" v-model="store.artistText" placeholder="Artist name" />
+        </template>
+        <template v-else-if="currentStep.id === 'colors'">
+          <div v-for="layer in store.visualizerLayers" :key="layer.id" class="row mt-8">
+            <label :for="`guide-${layer.id}`">{{ layer.name }}</label>
+            <input :id="`guide-${layer.id}`" type="color" :value="layer.fillColor" @input="store.updateVisualizerLayer(layer.id, { fillColor: $event.target.value })" />
+          </div>
+        </template>
+        <button v-else-if="currentStep.id === 'elements'" class="primary-btn" @click="store.activeTab = 'elements'">Edit Elements</button>
+        <button v-else-if="currentStep.id === 'export'" class="primary-btn" @click="$emit('export')">Export Video</button>
       </div>
     </section>
 
@@ -85,19 +100,24 @@
 </template>
 
 <script setup>
+import ImageUpload from './ImageUpload.vue'
 import { computed } from 'vue'
 import { useAppStore } from '../../stores/app.js'
 import { getTemplateById, templateSteps } from '../../templates/videoTemplates.js'
 
 const store = useAppStore()
 const qualities = [1080, 720, 480, 360, 240]
-defineEmits(['upload', 'preset'])
+defineEmits(['upload', 'preset', 'export'])
 
-const currentStep = computed(() => templateSteps[store.stepGuideIndex])
+const currentStep = computed(() => templateSteps[store.stepGuideIndex] || templateSteps[0])
 const isFirstStep = computed(() => store.stepGuideIndex === 0)
 const isLastStep = computed(() => store.stepGuideIndex === templateSteps.length - 1)
 const selectedTemplate = computed(() => getTemplateById(store.selectedTemplateId))
-const stepHint = computed(() => `Open the ${currentStep.value.label} tab to customize this step.`)
+function setBackdrop(src) {
+  store.backdropImageIsPreset = false
+  store.backdropImage = null
+  store.backdropType = src ? 'image' : 'solid'
+}
 
 function moveStep(offset) {
   const nextIndex = store.stepGuideIndex + offset
@@ -114,6 +134,8 @@ function formatTime(value) {
 
 <style scoped>
 @import './panel-shared.css';
+
+.guide-input { width: 100%; margin-top: 8px; padding: 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); }
 
 .guide-header,
 .guide-nav,

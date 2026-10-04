@@ -9,15 +9,18 @@
 
   <section class="section">
     <ToggleRow label="Wave Delay" v-model="store.waveDelay" />
-    <ToggleRow label="Drift" v-model="store.drift" />
-    <PanelRange v-if="store.drift" label="Intensity" v-model="store.driftIntensity" :min="0" :max="100" />
-    <ToggleRow v-if="store.drift" label="Custom" v-model="store.driftCustom" />
+    <DriftControls />
   </section>
 
   <section class="section">
     <PanelRange label="Rumble" v-model="store.visualizerRumble" :min="0" :max="100" />
     <PanelRange label="Bounce" v-model="store.visualizerBounce" :min="0" :max="100" />
     <ToggleRow label="Spin" v-model="store.visualizerSpin" />
+    <template v-if="store.visualizerSpin">
+      <PanelRange label="Spin Speed" v-model="store.visualizerSpinSpeed" :min="-100" :max="100" />
+      <PanelRange label="Spin Acceleration" v-model="store.visualizerSpinAcceleration" :min="-100" :max="100" />
+      <ToggleRow label="Lock Logo" v-model="store.visualizerLogoLocked" />
+    </template>
   </section>
 
   <section class="section">
@@ -28,6 +31,7 @@
 
 <script setup>
 import { useAppStore } from '../../../stores/app.js'
+import DriftControls from '../DriftControls.vue'
 import PanelRange from '../PanelRange.vue'
 import ToggleRow from '../ToggleRow.vue'
 

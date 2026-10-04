@@ -31,10 +31,10 @@ describe('videoTemplates', () => {
 
     expect(store.selectedTemplateId).toBe('default')
     expect(store.backdropGradient1).toBe('#0d0d1a')
-    expect(store.barColor).toBe('#f85462')
+    expect(store.barColor).toBe('#ffffff')
     expect(store.soundVisibleColor).toBe('#f6c453')
     expect(store.visualizerMode).toBe('classic')
-    expect(store.vizShape).toBe('bars')
+    expect(store.vizShape).toBe('circular')
   })
 
   it('falls back to default when an unknown template id is requested', () => {

@@ -1,3 +1,4 @@
+import { isRef, isReadonly } from 'vue'
 import { defineStore } from 'pinia'
 import { createAudioState } from './modules/audioState.js'
 import { createBackdropState } from './modules/backdropState.js'
@@ -17,7 +18,13 @@ export const useAppStore = defineStore('app', () => {
   const text = createTextState()
   const elements = createElementsState()
   const trackedRefs = createTrackedRefs({ audio, project, template, visualizer, backdrop, text, elements })
-  const history = createHistoryState(trackedRefs, () => resetTransientState(audio, project))
+  const history = createHistoryState(trackedRefs, () => {
+    resetTransientState(audio, project)
+    backdrop.backdropVideoFile.value = null
+    backdrop.backdropVideo.value = null
+    backdrop.backdropVideoStatus.value = ''
+    backdrop.backdropVideoDuration.value = 0
+  })
 
   return {
     ...audio,
@@ -32,10 +39,11 @@ export const useAppStore = defineStore('app', () => {
 })
 
 function createTrackedRefs(domains) {
-  const excludedKeys = new Set(['audioFile', 'fileName', 'currentTime', 'duration', 'exportStatus', 'backdropImage'])
+  const excludedKeys = new Set(['audioFile', 'fileName', 'currentTime', 'duration', 'exportStatus', 'backdropImage', 'isPlaying', 'isExporting', 'exportProgress'])
+  for (const key of ['backdropVideoFile', 'backdropVideo', 'backdropVideoStatus', 'backdropVideoDuration']) excludedKeys.add(key)
   return Object.fromEntries(
     Object.entries(flattenDomains(domains))
-      .filter(([key, value]) => value && 'value' in value && !excludedKeys.has(key)),
+      .filter(([key, value]) => isRef(value) && !isReadonly(value) && !excludedKeys.has(key)),
   )
 }
 
@@ -55,6 +63,7 @@ function flattenDomains(domains) {
 function resetTransientState(audio, project) {
   audio.audioFile.value = null
   audio.fileName.value = ''
+  audio.isPlaying.value = false
   audio.currentTime.value = 0
   audio.duration.value = 0
   project.exportStatus.value = ''

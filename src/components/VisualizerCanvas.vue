@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="wrapperRef"
     class="canvas-wrapper"
     @dragenter.prevent="dragging = true"
     @dragover.prevent="dragging = true"
@@ -8,7 +9,7 @@
   >
     <!-- Drop zone overlay -->
     <div
-      v-if="!store.audioFile || dragging"
+      v-if="dragging"
       class="drop-zone"
       :class="{ dragging, 'replace-audio': store.audioFile }"
       @click="$emit('upload')"
@@ -25,6 +26,8 @@
       </div>
     </div>
 
+    <button v-if="!store.audioFile && !dragging" class="upload-prompt" @click="$emit('upload')">Demo preview · Upload audio</button>
+
     <!-- Canvas -->
     <div class="canvas-container" :style="containerStyle">
       <canvas ref="canvasRef" :width="dims.w" :height="dims.h" class="viz-canvas" />
@@ -40,12 +43,18 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../stores/app.js'
 import { useAudio } from '../composables/useAudio.js'
 import { useVisualizer } from '../composables/useVisualizer.js'
+import { useBackdropVideo } from '../composables/useBackdropVideo.js'
 
 const store = useAppStore()
 const audio = useAudio()
 const viz = useVisualizer()
+const backdropVideo = useBackdropVideo(store)
 
 const canvasRef = ref(null)
+const wrapperRef = ref(null)
+const availableSize = ref({ width: 1000, height: 600 })
+let resizeObserver
+let lastFrame = 0
 const audioEl = ref(null)
 const dragging = ref(false)
 
@@ -56,7 +65,8 @@ const containerStyle = computed(() => {
   const ratio = w / h
   return {
     aspectRatio: `${w} / ${h}`,
-    maxWidth: ratio >= 1 ? '100%' : `${(h / w) * 100}%`,
+    width: `${Math.min(availableSize.value.width, availableSize.value.height * ratio)}px`,
+    maxWidth: '100%', maxHeight: '100%',
   }
 })
 
@@ -65,19 +75,34 @@ let disposed = false
 
 function loop(ts) {
   if (!canvasRef.value) return
+  if (!store.audioFile && store.isPlaying && lastFrame) {
+    const time = (store.currentTime || 0) + Math.min(100, ts - lastFrame) / 1000
+    store.currentTime = store.backdropType === 'video' || store.isExporting ? time : time % 12
+  }
+  if (store.audioFile && store.isPlaying && audioEl.value) store.currentTime = audioEl.value.currentTime
+  lastFrame = ts
+  backdropVideo.sync(store.currentTime)
   viz.drawFrame(canvasRef.value, audio.getFrequencyData, audio.getTimeDomainData, ts)
   animId = requestAnimationFrame(loop)
 }
 
 onMounted(() => {
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(([entry]) => {
+      availableSize.value = { width: entry.contentRect.width, height: entry.contentRect.height }
+    })
+    resizeObserver.observe(wrapperRef.value)
+  }
   audio.setup(audioEl.value)
   preparePreview()
 })
 
 onUnmounted(() => {
   disposed = true
+  resizeObserver?.disconnect()
   if (animId) cancelAnimationFrame(animId)
   viz.dispose()
+  backdropVideo.dispose()
   audio.dispose()
 })
 
@@ -170,6 +195,9 @@ function onDrop(event) {
   font-size: 12px;
   color: var(--text-muted);
 }
+
+.upload-prompt { position: absolute; bottom: 10px; z-index: 2; color: var(--text-secondary); background: var(--bg-panel); border: 1px solid var(--border); border-radius: 20px; padding: 8px 14px; font-size: 11px; }
+.upload-prompt:hover { color: var(--text-primary); border-color: var(--accent); }
 
 .canvas-container {
   width: 100%;

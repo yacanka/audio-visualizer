@@ -7,10 +7,10 @@
 :root {
   --bg-primary: #1a1b1e;
   --bg-secondary: #202124;
-  --bg-panel: #27282c;
+  --bg-panel: #303234;
   --bg-card: #2f3035;
   --bg-hover: #35363b;
-  --accent: #f85462;
+  --accent: #ff5252;
   --accent-hover: #ff6b77;
   --accent-dim: rgba(248, 84, 98, 0.15);
   --text-primary: #ffffff;

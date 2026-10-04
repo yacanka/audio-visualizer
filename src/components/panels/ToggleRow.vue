@@ -2,7 +2,7 @@
   <div class="row mt-8">
     <label class="item-label">{{ label }}</label>
     <label class="toggle">
-      <input type="checkbox" :checked="modelValue" @change="$emit('update:modelValue', $event.target.checked)" />
+      <input type="checkbox" :aria-label="label" :checked="modelValue" @change="$emit('update:modelValue', $event.target.checked)" />
       <span class="track" />
     </label>
   </div>

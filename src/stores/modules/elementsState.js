@@ -32,9 +32,9 @@ export function createElementsState() {
 
   /** Add a like and subscribe text preset. */
   function addSubscribeAnimation() {
-    elements.value.push(createTextElement('LIKE', 38, 42, 36))
+    elements.value.push({ ...createTextElement('LIKE', 38, 42, 36), startTime: 1, endTime: 5, animation: 'pop' })
     const subscribe = createTextElement('SUBSCRIBE', 62, 42, 28)
-    elements.value.push(subscribe)
+    elements.value.push({ ...subscribe, startTime: 1.3, endTime: 5.3, animation: 'pop' })
     selectedElementId.value = subscribe.id
   }
 

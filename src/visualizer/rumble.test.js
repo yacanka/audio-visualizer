@@ -14,11 +14,21 @@ function createStore(overrides = {}) {
 }
 
 describe('visualizer rumble', () => {
-  it('keeps the original size when rumble or analysis is disabled', () => {
-    const noRumble = createStore({ visualizerRumble: 0 })
+  it('keeps the original size when bounce or analysis is disabled', () => {
+    const noBounce = createStore({ visualizerBounce: 0 })
     const noAnalysis = createStore({ previewAudioAnalysisEnabled: false })
-    expect(getFrame(noRumble, loudMotion).scale).toBe(1)
+    expect(getFrame(noBounce, loudMotion).scale).toBe(1)
     expect(getFrame(noAnalysis, loudMotion).scale).toBe(1)
+  })
+
+  it('bounces independently of rumble and shakes without bounce', () => {
+    const bounce = getFrame(createStore({ visualizerRumble: 0 }), loudMotion)
+    expect(bounce.scale).toBeGreaterThan(1)
+    expect(bounce.x).toBe(0)
+    expect(bounce.y).toBe(0)
+    const shake = getVisualizerRumbleMotion(createStore({ visualizerBounce: 0 }), loudMotion, 0, 16, 1)
+    expect(shake.scale).toBe(1)
+    expect(Math.abs(shake.x) + Math.abs(shake.y)).toBeGreaterThan(0)
   })
 
   it('rises smoothly without periodic vibration', () => {

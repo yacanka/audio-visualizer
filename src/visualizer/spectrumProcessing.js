@@ -9,6 +9,7 @@ export function createSpectrumMagnitudes(store, data, pointCount, layout, loop =
   const passCount = store.vizSmooth ? layout.smoothingPasses : 0
   const smoothed = smoothSpectrum(widened, passCount, loop)
   const resampled = resampleSpectrum(smoothed, pointCount)
+  if (store.vizInvert) resampled.reverse()
   return resampled.map(value => normalizeMagnitude(value, store.sensitivity))
 }
 
